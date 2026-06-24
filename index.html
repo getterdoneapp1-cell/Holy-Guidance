@@ -520,27 +520,51 @@ function buildBible() {
 }
 
 // ── Journal / Mic ──
-document.getElementById('micBtn').addEventListener('click', function() {
+var finalTranscript = '';
+
+function startRecording() {
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     document.getElementById('recordStatus').textContent = 'Speech not supported — please type.';
     return;
   }
-  if (isRecording) { recognition.stop(); return; }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-  recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
-  var finalT = '';
-  recognition.onstart = function() { isRecording = true; document.getElementById('micBtn').classList.add('recording'); document.getElementById('recordStatus').textContent = 'Listening...'; };
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onstart = function() {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('recordStatus').textContent = 'Listening... tap to stop';
+  };
   recognition.onresult = function(e) {
     var interim = '';
     for (var i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalT += e.results[i][0].transcript + ' ';
+      if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
       else interim += e.results[i][0].transcript;
     }
-    document.getElementById('transcriptBox').value = finalT + interim;
+    document.getElementById('transcriptBox').value = finalTranscript + interim;
   };
-  recognition.onend = function() { isRecording = false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('recordStatus').textContent = 'Done. Tap Get Guidance.'; };
+  recognition.onerror = function(e) {
+    document.getElementById('recordStatus').textContent = e.error === 'not-allowed' ? 'Mic access denied — check browser settings.' : 'Error: ' + e.error;
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+  };
+  recognition.onend = function() {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('recordStatus').textContent = finalTranscript ? 'Got it — tap mic to add more, or tap Get Guidance.' : 'Tap mic to speak.';
+  };
   recognition.start();
+}
+
+document.getElementById('micBtn').addEventListener('click', function() {
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    finalTranscript = document.getElementById('transcriptBox').value;
+    startRecording();
+  }
 });
 
 document.getElementById('submitBtn').addEventListener('click', async function() {
@@ -561,13 +585,48 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     var data = await res.json();
     if (data.error) throw new Error(data.error);
     document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('responseContent').innerHTML = '<div class="res-block">' + data.reply.replace(/\n\n/g,'</div><div class="res-block">').replace(/\n/g,'<br>') + '</div>';
+    var html = '';
+    if (data.focus) {
+      html += '<div class="focus-block"><div class="focus-eyebrow">Your Word for Today</div><div class="focus-txt">' + data.focus + '</div></div>';
+    }
+    if (data.steps && data.steps.length) {
+      html += '<div class="res-block"><div class="res-chip">Action Steps</div>';
+      data.steps.forEach(function(s, i) {
+        html += '<div class="step-row"><div class="step-badge">' + (i+1) + '</div><div class="step-body"><div class="step-title">' + s.title + '</div><div class="step-detail">' + s.detail + '</div></div></div>';
+      });
+      html += '</div>';
+    }
+    if (data.verses && data.verses.length) {
+      html += '<div class="res-block"><div class="res-chip">Scripture for You</div>';
+      data.verses.forEach(function(v) {
+        html += '<div class="verse-row"><div class="verse-badge">' + v.ref + '</div><div class="verse-q">"' + v.quote + '"</div><div class="verse-c">' + v.connection + '</div></div>';
+      });
+      html += '</div>';
+    }
+    if (data.encouragement) {
+      html += '<div class="encourage-block">' + data.encouragement + '</div>';
+    }
+    if (!html) {
+      html = '<div class="res-block"><div class="res-body">' + JSON.stringify(data) + '</div></div>';
+    }
+    html += '<button class="reset-btn" onclick="resetJournal()">Start a New Entry</button>';
+    document.getElementById('responseContent').innerHTML = html;
   } catch(err) {
     document.getElementById('loadingState').style.display = 'none';
     errEl.textContent = 'Error: ' + err.message; errEl.classList.add('show'); ar.classList.remove('show');
   }
   this.disabled = false;
 });
+
+function resetJournal() {
+  document.getElementById('transcriptBox').value = '';
+  finalTranscript = '';
+  document.getElementById('aiResponse').classList.remove('show');
+  document.getElementById('responseContent').innerHTML = '';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('recordStatus').textContent = 'Tap mic to speak.';
+  document.getElementById('apiError').classList.remove('show');
+}
 
 // ── Init ──
 function init() {
