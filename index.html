@@ -472,6 +472,7 @@ function buildWorkout() {
     document.getElementById('exerciseList').innerHTML = '';
     return;
   }
+<<<<<<< HEAD
   document.getElementById('workoutEmoji').textContent = w.emoji;
   document.getElementById('workoutTitle').textContent = w.label;
   document.getElementById('workoutSub').textContent = w.sub;
@@ -584,3 +585,261 @@ init();
 </script>
 </body>
 </html>
+=======
+  const key=`${today}_${new Date().toDateString()}`;
+  const doneSets = exDone[key]||{};
+  el.innerHTML=`<div class="workout-block">
+    <div class="wb-header">
+      <div class="wb-icon">${w.emoji}</div>
+      <div><div class="wb-title">${w.label} Day</div><div class="wb-sub">${w.muscle}</div></div>
+    </div>
+    ${w.exercises.map((ex,i)=>{
+      const done=!!doneSets[i];
+      return `<div class="exercise-item">
+        <div class="ex-check ${done?'done':''}" onclick="toggleEx(${i})"></div>
+        <span class="ex-name ${done?'done':''}">${ex.n}</span>
+        <span class="ex-sets">${ex.s}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function toggleEx(i){
+  const today=new Date().getDay();
+  const key=`${today}_${new Date().toDateString()}`;
+  if(!exDone[key])exDone[key]={};
+  exDone[key][i]=!exDone[key][i];
+  localStorage.setItem('hg_exercises',JSON.stringify(exDone));
+  buildWorkoutContent();
+}
+
+// BIBLE
+function buildBible(){
+  const checks=document.getElementById('chapterChecks');
+  if(!checks)return;
+  const chapters=[44,45,46];
+  checks.innerHTML=chapters.map(c=>{
+    const done=!!bibleRead['psalm_'+c];
+    return `<button class="ch-btn ${done?'read':''}" onclick="toggleChapter('psalm_${c}',this)">${c}</button>`;
+  }).join('');
+  const done=chapters.filter(c=>bibleRead['psalm_'+c]).length;
+  document.getElementById('statBible').textContent=done===chapters.length?'✓':'📖';
+}
+
+function toggleChapter(key,btn){
+  bibleRead[key]=!bibleRead[key];
+  localStorage.setItem('hg_bible',JSON.stringify(bibleRead));
+  btn.classList.toggle('read',!!bibleRead[key]);
+  buildBible();
+}
+
+// SCHEDULE
+function buildSchedule(){
+  const now=new Date(), today=now.getDay();
+  const wc=document.getElementById('weekCalDays');
+  if(!wc)return;
+  const monday=new Date(now); monday.setDate(now.getDate()-(today===0?6:today-1));
+  wc.innerHTML=Array.from({length:7},(_,i)=>{
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const isToday=d.toDateString()===now.toDateString();
+    const hasEv=events.some(e=>e.date===d.toDateString());
+    return `<div class="wc-day">
+      <div class="wc-dlabel">${DAY_NAMES[d.getDay()]}</div>
+      <div class="wc-dnum ${isToday?'today':''} ${hasEv?'has-event':''}">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+  renderEvents();
+}
+
+function renderEvents(){
+  const today=new Date().toDateString();
+  const todayEvs=events.filter(e=>e.date===today).sort((a,b)=>a.time.localeCompare(b.time));
+  const el=document.getElementById('eventsList');
+  if(!el)return;
+  el.innerHTML=todayEvs.length
+    ? todayEvs.map(e=>`<div class="event-card">
+        <div class="ev-time-col"><div class="ev-time">${fmtTime(e.time)}</div></div>
+        <div class="ev-line"></div>
+        <div class="ev-body"><div class="ev-title">${e.title}</div></div>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:14px;padding:8px 0;">No events today.</div>';
+}
+
+function fmtTime(t){
+  if(!t)return'';
+  const [h,m]=t.split(':').map(Number);
+  const ampm=h>=12?'PM':'AM';
+  return `${h%12||12}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function toggleEventForm(){
+  document.getElementById('eventForm').classList.toggle('show');
+}
+
+function saveEvent(){
+  const title=document.getElementById('evTitle').value.trim();
+  const time=document.getElementById('evTime').value;
+  if(!title)return;
+  events.push({title,time,date:new Date().toDateString()});
+  localStorage.setItem('hg_events',JSON.stringify(events));
+  document.getElementById('evTitle').value='';
+  document.getElementById('evTime').value='';
+  toggleEventForm();
+  renderEvents();
+}
+
+// SETTINGS
+function openSettings(){
+  document.getElementById('apiKeyInput').value=apiKey;
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings(){
+  document.getElementById('settingsModal').classList.remove('show');
+}
+function saveSettings(){
+  apiKey=document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('hg_apikey',apiKey);
+  closeSettings();
+}
+
+// VOICE RECORDING
+function toggleRecording(){
+  if(isRecording){stopRecording();return;}
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    document.getElementById('recordStatus').textContent='Voice not supported on this browser.';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.continuous=true;
+  recognition.interimResults=true;
+  recognition.lang='en-US';
+  let final='';
+  recognition.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    document.getElementById('transcriptBox').value=final+interim;
+  };
+  recognition.onerror=e=>{
+    document.getElementById('recordStatus').textContent='Mic error: '+e.error;
+    stopRecording();
+  };
+  recognition.onend=()=>{if(isRecording)stopRecording();};
+  recognition.start();
+  isRecording=true;
+  document.getElementById('micBtn').classList.add('recording');
+  document.getElementById('recordStatus').classList.add('live');
+  document.getElementById('recordStatus').textContent='Listening... tap to stop';
+}
+
+function stopRecording(){
+  if(recognition)recognition.stop();
+  isRecording=false;
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('recordStatus').classList.remove('live');
+  document.getElementById('recordStatus').textContent='Tap to start speaking';
+}
+
+// AI JOURNAL
+async function submitJournal(){
+  const text=document.getElementById('transcriptBox').value.trim();
+  if(!text){
+    showErr('Please write or speak your journal entry first.');
+    return;
+  }
+const btn=document.getElementById('submitBtn');
+  const res=document.getElementById('aiResponse');
+  const loading=document.getElementById('loadingState');
+  const content=document.getElementById('responseContent');
+  hideErr();
+  btn.disabled=true;
+  res.classList.add('show');
+  loading.style.display='block';
+  content.style.display='none';
+
+  const prompt=`You are a wise, faith-filled spiritual guide helping a Christian man named Jeff receive personalized Biblical guidance. Jeff has shared his journal entry below. Respond with warmth, directness, and Biblical truth.
+
+Jeff's journal entry:
+"${text}"
+
+Respond in this exact JSON structure:
+{
+  "focus": "One powerful sentence — the core spiritual truth Jeff needs today",
+  "steps": [
+    {"title": "Step title", "detail": "2-3 sentences of practical, faith-rooted guidance"},
+    {"title": "Step title", "detail": "2-3 sentences"},
+    {"title": "Step title", "detail": "2-3 sentences"}
+  ],
+  "verses": [
+    {"ref": "Book Chapter:Verse", "quote": "The verse text", "connection": "1-2 sentences on why this verse speaks to Jeff's situation"},
+    {"ref": "Book Chapter:Verse", "quote": "The verse text", "connection": "1-2 sentences"}
+  ],
+  "encouragement": "A personal, heartfelt closing word of encouragement for Jeff — 2-3 sentences"
+}`;
+
+  try{
+    const r=await fetch('/api/guidance',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
+    });
+    if(!r.ok){
+      const err=await r.json().catch(()=>({}));
+      throw new Error(err.error||'API error '+r.status);
+    }
+    const json=await r.json();
+    loading.style.display='none';
+    content.style.display='block';
+    content.innerHTML=`
+      <div class="focus-block">
+        <div class="focus-eyebrow">Your Word for Today</div>
+        <div class="focus-txt">${json.focus}</div>
+      </div>
+      <div class="res-block">
+        <div class="res-chip">Action Steps</div>
+        ${json.steps.map((s,i)=>`<div class="step-row">
+          <div class="step-badge">${i+1}</div>
+          <div class="step-body"><div class="step-title">${s.title}</div><div class="step-detail">${s.detail}</div></div>
+        </div>`).join('')}
+      </div>
+      <div class="res-block">
+        <div class="res-chip">Scripture for You</div>
+        ${json.verses.map(v=>`<div class="verse-row">
+          <div class="verse-badge">${v.ref}</div>
+          <div class="verse-q">"${v.quote}"</div>
+          <div class="verse-c">${v.connection}</div>
+        </div>`).join('')}
+      </div>
+      <div class="encourage-block">${json.encouragement}</div>
+      <button class="reset-btn" onclick="resetJournal()">Start a New Entry</button>`;
+  }catch(e){
+    loading.style.display='none';
+    res.classList.remove('show');
+    showErr('Error: '+e.message);
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+function resetJournal(){
+  document.getElementById('transcriptBox').value='';
+  document.getElementById('aiResponse').classList.remove('show');
+  document.getElementById('responseContent').style.display='none';
+  document.getElementById('loadingState').style.display='block';
+  hideErr();
+}
+
+function showErr(msg){
+  const el=document.getElementById('apiError');
+  el.textContent=msg; el.classList.add('show');
+}
+function hideErr(){
+  document.getElementById('apiError').classList.remove('show');
+}
+
+init();
+</script></body></html>
+>>>>>>> befef72 (Add /api/guidance proxy and fix mobile CORS issue)
