@@ -579,30 +579,12 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     var data = await res.json();
     if (data.error) throw new Error(data.error);
     document.getElementById('loadingState').style.display = 'none';
-    var html = '';
-    if (data.focus) {
-      html += '<div class="focus-block"><div class="focus-eyebrow">Your Word for Today</div><div class="focus-txt">' + data.focus + '</div></div>';
-    }
-    if (data.steps && data.steps.length) {
-      html += '<div class="res-block"><div class="res-chip">Action Steps</div>';
-      data.steps.forEach(function(s, i) {
-        html += '<div class="step-row"><div class="step-badge">' + (i+1) + '</div><div class="step-body"><div class="step-title">' + s.title + '</div><div class="step-detail">' + s.detail + '</div></div></div>';
-      });
-      html += '</div>';
-    }
-    if (data.verses && data.verses.length) {
-      html += '<div class="res-block"><div class="res-chip">Scripture for You</div>';
-      data.verses.forEach(function(v) {
-        html += '<div class="verse-row"><div class="verse-badge">' + v.ref + '</div><div class="verse-q">"' + v.quote + '"</div><div class="verse-c">' + v.connection + '</div></div>';
-      });
-      html += '</div>';
-    }
-    if (data.encouragement) {
-      html += '<div class="encourage-block">' + data.encouragement + '</div>';
-    }
-    if (!html) {
-      html = '<div class="res-block"><div class="res-body">' + JSON.stringify(data) + '</div></div>';
-    }
+    var paragraphs = data.reply.trim().split(/\n\n+/);
+    var html = '<div class="res-block" style="line-height:1.8;font-size:15px;">';
+    paragraphs.forEach(function(p) {
+      html += '<p style="margin-bottom:14px;color:var(--text);">' + p.replace(/\n/g, '<br>') + '</p>';
+    });
+    html += '</div>';
     html += '<button class="reset-btn" onclick="resetJournal()">Start a New Entry</button>';
     document.getElementById('responseContent').innerHTML = html;
   } catch(err) {

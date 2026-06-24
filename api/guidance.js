@@ -9,25 +9,20 @@ export default async function handler(req, res) {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: 'No journal text provided' });
 
-  const prompt = `You are a wise, faith-filled spiritual guide helping a Christian man named Jeff receive personalized Biblical guidance. Jeff has shared his journal entry below. Respond with warmth, directness, and Biblical truth.
+  const prompt = `You are a wise, Spirit-filled guide speaking directly to Jeff — a faith-driven man, father, entrepreneur, and landscaper who wakes at 4 AM to pray and seek God. Jeff has shared what's on his heart below.
+
+Respond the way a trusted pastor or mentor would — personal, warm, direct, and rooted in Scripture. Speak to Jeff specifically, not generically. Your response should feel like a real conversation, not a template.
+
+Include:
+- Personal encouragement that speaks to exactly what Jeff shared
+- A specific action or prayer focus for today
+- Two or three Bible verses that directly apply, quoted in full
+- A closing word that sends him forward with faith
 
 Jeff's journal entry:
 "${text}"
 
-Respond in this exact JSON structure:
-{
-  "focus": "One powerful sentence — the core spiritual truth Jeff needs today",
-  "steps": [
-    {"title": "Step title", "detail": "2-3 sentences of practical, faith-rooted guidance"},
-    {"title": "Step title", "detail": "2-3 sentences"},
-    {"title": "Step title", "detail": "2-3 sentences"}
-  ],
-  "verses": [
-    {"ref": "Book Chapter:Verse", "quote": "The verse text", "connection": "1-2 sentences on why this verse speaks to Jeff's situation"},
-    {"ref": "Book Chapter:Verse", "quote": "The verse text", "connection": "1-2 sentences"}
-  ],
-  "encouragement": "A personal, heartfelt closing word of encouragement for Jeff — 2-3 sentences"
-}`;
+Write in plain flowing paragraphs. No bullet points, no headers, no JSON. Just speak to him.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -50,9 +45,8 @@ Respond in this exact JSON structure:
     }
 
     const data = await response.json();
-    const raw = data.content[0].text;
-    const json = JSON.parse(raw.match(/\{[\s\S]*\}/)[0]);
-    res.status(200).json(json);
+    const reply = data.content[0].text;
+    res.status(200).json({ reply });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
