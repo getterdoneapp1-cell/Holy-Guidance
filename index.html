@@ -1,985 +1,591 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Holy Guidance</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
---bg:#080e0a;--s1:#0f1712;--s2:#16201a;--s3:#1e2d23;
---border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.10);
---g:#4ade80;--g2:#22c55e;--g-dim:#1a4a28;
---gold:#fcd34d;--gold2:#f59e0b;
---blue:#60a5fa;--blue-dim:rgba(96,165,250,.1);
---purple:#a78bfa;--purple-dim:rgba(167,139,250,.1);
---orange:#fb923c;--orange-dim:rgba(251,146,60,.1);
---text:#e8f5ec;--muted:#6b8f72;--muted2:#4a6652;
---red:#f87171;--nav-h:80px;
+  --bg:#080e0a;--s1:#0f1712;--s2:#16201a;--s3:#1e2d23;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.10);
+  --g:#4ade80;--g2:#22c55e;--g-dim:#1a4a28;
+  --gold:#fcd34d;--gold2:#f59e0b;
+  --blue:#60a5fa;--orange:#fb923c;
+  --text:#e8f5ec;--muted:#6b8f72;--muted2:#4a6652;
+  --red:#f87171;--nav-h:80px;
 }
-
-/* LIGHT MODE */
 [data-theme="light"]{
---bg:#f4f6f1;--s1:#eaede6;--s2:#ffffff;--s3:#f0f2ed;
---border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.13);
---g:#2d7a1f;--g2:#3a9e28;--g-dim:#d6f0ce;
---gold:#b07800;--gold2:#c98a00;
---blue:#1a6abf;
---text:#1a2418;--muted:#6b7a64;--muted2:#8a9a83;
---red:#c0392b;--orange:#c05a10;
+  --bg:#f4f6f1;--s1:#eaede6;--s2:#ffffff;--s3:#f0f2ed;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.13);
+  --g:#2d7a1f;--g2:#3a9e28;--g-dim:#d6f0ce;
+  --gold:#b07800;--gold2:#c98a00;
+  --text:#1a2418;--muted:#6b7a64;--muted2:#8a9a83;
+  --red:#c0392b;
 }
-[data-theme="light"] .header{background:#eaede6;}
-[data-theme="light"] .nav{background:#eaede6;}
-[data-theme="light"] .get-guidance-btn{box-shadow:0 4px 16px rgba(58,158,40,.25);}
-
-html,body{height:100%;overflow:hidden;background:var(--bg);}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;}
-.header{flex-shrink:0;padding:54px 20px 18px;background:var(--bg);position:relative;z-index:10;}
-.header::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border);}
+html,body{height:100%;background:var(--bg);overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100vh;}
+.header{flex-shrink:0;padding:54px 20px 18px;background:var(--bg);border-bottom:1px solid var(--border);z-index:10;}
 .header-row{display:flex;align-items:flex-start;justify-content:space-between;}
-.header-app{font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
-.header-title{font-size:24px;font-weight:700;letter-spacing:-.5px;color:var(--text);line-height:1.15;}
-.header-date{font-size:13px;color:var(--muted);margin-top:3px;}
-.header-right{display:flex;gap:8px;margin-top:4px;}
-.hdr-btn{width:38px;height:38px;border-radius:12px;background:var(--s2);border:1px solid var(--border2);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.back-btn{display:none;}
+.header-app{font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;}
+.header-title{font-size:24px;font-weight:700;color:var(--text);}
+.header-date{font-size:13px;color:var(--muted);margin-top:2px;}
+.hdr-btn{width:38px;height:38px;border-radius:12px;background:var(--s2);border:1px solid var(--border2);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .screen{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 16px calc(var(--nav-h) + 24px);display:none;-webkit-overflow-scrolling:touch;}
 .screen.active{display:block;}
-.screen::-webkit-scrollbar{display:none;}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:var(--nav-h);background:var(--s1);border-top:1px solid var(--border);display:flex;z-index:100;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0);}
-.nav-btn{flex:1;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.2px;color:var(--muted2);padding-bottom:4px;transition:color .2s;position:relative;}
-.nav-btn.active{color:var(--g);}
-.nav-btn.active::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:10px;background:rgba(74,222,128,.1);z-index:-1;}
-.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;transition:stroke .2s;}
-.nav-btn.active svg{stroke:var(--g);}
-.sec-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;margin-top:4px;}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:var(--nav-h);background:var(--s1);border-top:1px solid var(--border);display:flex;z-index:9999;padding-bottom:env(safe-area-inset-bottom,0);}
+.nb{flex:1;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:10px;font-weight:600;color:var(--muted2);touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0;}
+.nb.active{color:var(--g);}
+.nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
 .card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;}
-.card-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
-.btn-primary{width:100%;background:var(--g2);color:#000;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;transition:opacity .15s;}
-.btn-primary:active{opacity:.8;}
-.chip{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
-.greeting{font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.2;margin-bottom:4px;}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.btn-primary{width:100%;background:var(--g2);color:#000;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;}
+.greeting{font-size:28px;font-weight:700;margin-bottom:4px;}
 .greeting-sub{font-size:14px;color:var(--muted);margin-bottom:22px;}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
 .stat{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:center;}
-.stat-num{font-size:26px;font-weight:800;color:var(--g);letter-spacing:-1px;line-height:1;}
-.stat-lbl{font-size:10px;font-weight:600;color:var(--muted);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;}
-.verse-card{border-radius:20px;padding:20px;margin-bottom:14px;background:var(--g-dim);border:1px solid rgba(74,222,128,.15);position:relative;overflow:hidden;}
-.verse-card::before{content:"❝";position:absolute;top:-8px;right:16px;font-size:80px;color:rgba(74,222,128,.08);line-height:1;font-family:Georgia,serif;}
-.verse-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(74,222,128,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--g);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;}
+.stat-num{font-size:26px;font-weight:800;color:var(--g);line-height:1;}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--muted);margin-top:5px;text-transform:uppercase;}
+.verse-card{border-radius:20px;padding:20px;margin-bottom:14px;background:var(--g-dim);border:1px solid rgba(74,222,128,.15);}
+.verse-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(74,222,128,.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--g);margin-bottom:12px;}
 .verse-body{font-size:15px;line-height:1.7;color:rgba(232,245,236,.85);font-style:italic;margin-bottom:10px;}
 .verse-ref{font-size:13px;font-weight:700;color:var(--gold);}
 [data-theme="light"] .verse-body{color:rgba(26,36,24,.8);}
-.journal-cta{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px;}
+.jcta{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px;}
 .jcta-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .jcta-icon{width:40px;height:40px;border-radius:12px;background:rgba(74,222,128,.12);display:flex;align-items:center;justify-content:center;font-size:18px;}
 .jcta-title{font-size:16px;font-weight:700;}
-.jcta-sub{font-size:13px;color:var(--muted);margin-top:1px;}
-.qt-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);}
-.qt-row:last-child{border-bottom:none;}
-.qt-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;}
-.connect-pill{display:flex;align-items:center;gap:10px;background:rgba(252,211,77,.06);border:1px solid rgba(252,211,77,.2);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:rgba(252,211,77,.9);line-height:1.5;}
-.connect-pill svg{width:20px;height:20px;stroke:var(--gold);flex-shrink:0;}
-.job-card{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
-.job-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--g2);border-radius:3px 0 0 3px;}
-.job-card.pending::before{background:var(--gold2);}
-.job-name{font-size:16px;font-weight:700;margin-bottom:4px;}
-.job-detail{font-size:13px;color:var(--muted);display:flex;gap:12px;}
-.job-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;margin-top:10px;letter-spacing:.3px;}
-.tag-today{background:rgba(74,222,128,.15);color:var(--g);}
-.tag-pending{background:rgba(252,211,77,.12);color:var(--gold);}
-.task-wrap{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;}
+.jcta-sub{font-size:13px;color:var(--muted);}
 .task-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
 .task-item:last-child{border-bottom:none;}
-.task-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.task-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .task-check.done{background:var(--g2);border-color:var(--g2);}
 .task-check.done::after{content:"✓";color:#000;font-size:13px;font-weight:900;}
-.task-text{font-size:15px;flex:1;color:var(--text);}
+.task-text{font-size:15px;flex:1;}
 .task-text.done{text-decoration:line-through;color:var(--muted);}
 .add-row{display:flex;gap:8px;margin-top:14px;}
 .add-input{flex:1;background:var(--s3);border:1px solid var(--border2);border-radius:12px;padding:11px 14px;font-size:15px;color:var(--text);outline:none;font-family:inherit;}
-.add-input:focus{border-color:var(--g);}
 .add-input::placeholder{color:var(--muted);}
-.add-btn{background:var(--g2);color:#000;border:none;border-radius:12px;padding:11px 16px;font-size:20px;font-weight:900;cursor:pointer;}
+.add-btn{background:var(--g2);color:#000;border:none;border-radius:12px;padding:11px 16px;font-size:20px;cursor:pointer;touch-action:manipulation;}
+.job-card{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.job-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--g2);}
+.job-card.pending::before{background:var(--gold2);}
+.job-name{font-size:16px;font-weight:700;margin-bottom:4px;}
+.job-detail{font-size:13px;color:var(--muted);display:flex;gap:12px;}
+.job-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;margin-top:10px;}
+.tag-today{background:rgba(74,222,128,.15);color:var(--g);}
+.tag-pending{background:rgba(252,211,77,.12);color:var(--gold);}
+.more-card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;display:flex;gap:16px;align-items:center;cursor:pointer;touch-action:manipulation;}
+.mc-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.mc-name{font-size:17px;font-weight:700;margin-bottom:3px;}
+.mc-desc{font-size:13px;color:var(--muted);}
+.mc-arrow{color:var(--muted);font-size:20px;margin-left:auto;}
 .journal-intro{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
-.q-list{margin-bottom:20px;}
 .q-row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border);}
 .q-row:last-child{border-bottom:none;}
-.q-num{width:28px;height:28px;border-radius:8px;background:var(--s3);border:1px solid var(--border2);color:var(--g);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.q-num{width:28px;height:28px;border-radius:8px;background:var(--s3);border:1px solid var(--border2);color:var(--g);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .q-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
 .q-text{font-size:14px;color:var(--text);line-height:1.5;}
-.record-card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:24px 20px;margin-bottom:14px;text-align:center;}
-.record-hint{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
-.mic-wrap{position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:16px;}
-.mic-btn{width:88px;height:88px;border-radius:50%;background:var(--g-dim);border:2px solid rgba(74,222,128,.3);color:var(--g);font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;position:relative;z-index:1;}
-.mic-btn.recording{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.4);color:var(--red);animation:micpulse 1.5s ease-in-out infinite;}
-.mic-ring{position:absolute;width:88px;height:88px;border-radius:50%;border:2px solid var(--g);opacity:0;}
-.mic-btn.recording~.mic-ring{border-color:var(--red);animation:ripple 1.5s ease-out infinite;}
-@keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3);}50%{box-shadow:0 0 0 12px rgba(248,113,113,0);}}
-@keyframes ripple{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(1.6);}}
-.record-status{font-size:13px;color:var(--muted);min-height:18px;}
-.record-status.live{color:var(--red);font-weight:600;}
-.transcript{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:14px;padding:14px;font-size:14px;line-height:1.7;font-family:inherit;color:var(--text);resize:none;outline:none;min-height:110px;margin-top:14px;}
-.transcript:focus{border-color:var(--g);}
-.transcript::placeholder{color:var(--muted);}
-.get-guidance-btn{width:100%;background:var(--g2);color:#000;border:none;border-radius:16px;padding:17px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:16px;letter-spacing:.3px;transition:opacity .15s;box-shadow:0 4px 20px rgba(34,197,94,.3);}
-.get-guidance-btn:active{opacity:.85;}
-.get-guidance-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.mic-wrap{display:flex;justify-content:center;margin-bottom:16px;}
+.mic-btn{width:88px;height:88px;border-radius:50%;background:var(--g-dim);border:2px solid rgba(74,222,128,.3);color:var(--g);font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.mic-btn.recording{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.4);color:var(--red);}
+.record-hint{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;text-align:center;}
+.record-status{font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px;}
+.transcript{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:14px;padding:14px;font-size:14px;line-height:1.7;font-family:inherit;color:var(--text);resize:none;outline:none;min-height:110px;margin-bottom:14px;}
+.get-guidance-btn{width:100%;background:var(--g2);color:#000;border:none;border-radius:16px;padding:17px;font-size:17px;font-weight:900;cursor:pointer;margin-bottom:16px;touch-action:manipulation;box-shadow:0 4px 20px rgba(34,197,94,.3);}
 .err-banner{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none;}
 .err-banner.show{display:block;}
-.ai-response{display:none;}
-.ai-response.show{display:block;}
-.loading-wrap{text-align:center;padding:40px 20px;color:var(--muted);}
-.spinner{width:44px;height:44px;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--g);animation:spin 1s linear infinite;margin:0 auto 14px;}
+.ai-resp{display:none;}
+.ai-resp.show{display:block;}
+.spinner{width:44px;height:44px;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--g);animation:spin 1s linear infinite;margin:20px auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading-txt{font-size:14px;color:var(--muted);}
-.res-block{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;}
-.res-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
-.res-chip::before{content:"";display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;}
-.res-body{font-size:15px;line-height:1.75;color:var(--text);}
-.step-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-.step-row:last-child{border-bottom:none;}
-.step-badge{width:30px;height:30px;border-radius:9px;background:var(--g-dim);border:1px solid rgba(74,222,128,.2);color:var(--g);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.step-body .step-title{font-size:15px;font-weight:700;margin-bottom:3px;}
-.step-body .step-detail{font-size:13px;color:var(--muted);line-height:1.55;}
-.verse-row{padding:12px 0;border-bottom:1px solid var(--border);}
-.verse-row:last-child{border-bottom:none;}
-.verse-badge{display:inline-block;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:var(--g);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800;margin-bottom:7px;}
-.verse-q{font-size:14px;font-style:italic;color:rgba(232,245,236,.65);margin-bottom:6px;line-height:1.55;}
-.verse-c{font-size:13px;color:var(--text);line-height:1.5;}
-.focus-block{background:var(--g-dim);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:22px;margin-bottom:12px;text-align:center;}
-.focus-eyebrow{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--g);opacity:.7;margin-bottom:10px;}
-.focus-txt{font-size:18px;font-weight:700;line-height:1.5;color:var(--text);}
-.encourage-block{background:rgba(252,211,77,.05);border:1px solid rgba(252,211,77,.15);border-radius:20px;padding:20px;margin-bottom:12px;text-align:center;font-size:15px;color:rgba(252,211,77,.9);line-height:1.7;font-style:italic;}
-.reset-btn{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;color:var(--muted);margin-bottom:24px;}
-.more-hub-card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;display:flex;gap:16px;align-items:center;cursor:pointer;transition:border-color .2s;}
-.more-hub-card:active{border-color:var(--border2);}
-.mhc-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
-.mhc-body{flex:1;}
-.mhc-name{font-size:17px;font-weight:700;margin-bottom:3px;}
-.mhc-desc{font-size:13px;color:var(--muted);line-height:1.4;}
-.mhc-arrow{color:var(--muted);font-size:18px;}
-.week-strip{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;}
-.week-strip::-webkit-scrollbar{display:none;}
-.day-pill{flex-shrink:0;border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center;min-width:56px;background:var(--s2);}
-.day-pill.today{background:var(--g-dim);border-color:rgba(74,222,128,.3);}
-.day-pill.rest{opacity:.5;}
-.dp-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;}
-.dp-name{font-size:12px;font-weight:700;margin-top:3px;color:var(--text);}
-.day-pill.today .dp-label{color:var(--g);}
-.day-pill.today .dp-name{color:var(--g);}
-.workout-block{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;}
-.wb-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.wb-icon{width:42px;height:42px;border-radius:12px;background:var(--g-dim);display:flex;align-items:center;justify-content:center;font-size:20px;}
-.wb-title{font-size:17px;font-weight:700;}
-.wb-sub{font-size:12px;color:var(--muted);margin-top:2px;}
-.exercise-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-.exercise-item:last-child{border-bottom:none;}
-.ex-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.ex-check.done{background:var(--g2);border-color:var(--g2);}
-.ex-check.done::after{content:"✓";color:#000;font-size:11px;font-weight:900;}
-.ex-name{flex:1;font-size:14px;font-weight:500;}
-.ex-name.done{text-decoration:line-through;color:var(--muted);}
-.ex-sets{font-size:12px;color:var(--muted);font-weight:600;background:var(--s3);padding:3px 10px;border-radius:20px;}
-.rest-card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:32px 20px;text-align:center;}
-.rest-emoji{font-size:48px;margin-bottom:12px;}
-.rest-title{font-size:20px;font-weight:700;margin-bottom:6px;}
-.rest-sub{font-size:14px;color:var(--muted);}
-.macro-row{display:flex;gap:10px;margin-bottom:16px;}
-.macro-card{flex:1;background:var(--s3);border-radius:14px;padding:12px 10px;text-align:center;}
-.macro-num{font-size:20px;font-weight:800;line-height:1;}
-.macro-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:4px;}
-.macro-bar-wrap{margin-bottom:6px;}
-.macro-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
-.macro-bar-label span:last-child{font-weight:700;color:var(--text);}
-.macro-bar{height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:10px;}
-.macro-bar-fill{height:100%;border-radius:3px;transition:width .4s;}
-.meal-card{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;}
-.meal-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.meal-icon{font-size:22px;}
-.meal-time-label{font-size:14px;font-weight:700;}
-.meal-time{font-size:12px;color:var(--muted);margin-top:1px;}
-.meal-cals{margin-left:auto;background:var(--s3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--gold);}
-.meal-item{font-size:14px;color:rgba(232,245,236,.8);padding:4px 0;line-height:1.5;}
-.meal-item::before{content:"· ";color:var(--muted);}
-[data-theme="light"] .meal-item{color:rgba(26,36,24,.8);}
-.meal-macros{display:flex;gap:8px;margin-top:10px;}
-.mmacro{font-size:11px;font-weight:700;background:var(--s3);padding:3px 10px;border-radius:20px;color:var(--muted);}
-.bible-progress-card{background:var(--g-dim);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:20px;margin-bottom:14px;}
-.bpc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
-.bpc-title{font-size:16px;font-weight:700;}
-.bpc-day{background:rgba(74,222,128,.15);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:var(--g);}
-.bpc-bar{height:6px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden;margin-bottom:8px;}
-.bpc-fill{height:100%;background:var(--g);border-radius:3px;}
-.bpc-pct{font-size:12px;color:var(--g);font-weight:700;}
-.reading-card{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:12px;}
-.rc-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
-.rc-book{font-size:22px;font-weight:800;margin-bottom:4px;}
-.rc-chapters{font-size:14px;color:var(--muted);margin-bottom:16px;}
-.chapter-checks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.ch-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:var(--s3);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
-.ch-btn.read{background:var(--g2);border-color:var(--g2);color:#000;}
-.reading-note{font-size:13px;color:var(--muted);line-height:1.6;background:var(--s3);border-radius:12px;padding:12px;}
-.prev-readings{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;}
-.prev-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;}
-.prev-row:last-child{border-bottom:none;}
-.prev-ref{font-weight:600;}
-.prev-done{color:var(--g);font-size:12px;font-weight:700;}
-.week-cal{margin-bottom:14px;}
-.wc-days{display:flex;gap:4px;margin-bottom:8px;}
-.wc-day{flex:1;text-align:center;}
-.wc-dlabel{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.3px;margin-bottom:6px;}
-.wc-dnum{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;margin:0 auto;color:var(--muted);}
-.wc-dnum.today{background:var(--g2);color:#000;}
-.wc-dnum.has-event::after{content:"·";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);color:var(--g);font-size:16px;}
-.wc-dnum.today.has-event::after{color:#000;}
-.wc-dnum{position:relative;}
-.event-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;}
-.ev-time-col{min-width:52px;text-align:right;}
-.ev-time{font-size:13px;font-weight:700;color:var(--g);}
-.ev-ampm{font-size:10px;color:var(--muted);font-weight:600;}
-.ev-line{width:2px;background:var(--border2);border-radius:2px;margin:0 6px;}
-.ev-body{flex:1;}
-.ev-title{font-size:15px;font-weight:700;margin-bottom:2px;}
-.ev-detail{font-size:12px;color:var(--muted);}
-.ev-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
-.add-event-btn{width:100%;background:var(--s2);border:1px dashed var(--border2);border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;color:var(--muted);margin-top:8px;}
-.event-form{background:var(--s2);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-bottom:12px;display:none;}
-.event-form.show{display:block;}
-.ev-input{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:15px;color:var(--text);outline:none;font-family:inherit;margin-bottom:8px;}
-.ev-input:focus{border-color:var(--g);}
-.ev-input::placeholder{color:var(--muted);}
-.ev-row2{display:flex;gap:8px;}
-.ev-save-btn{background:var(--g2);color:#000;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:800;cursor:pointer;}
-.ev-cancel-btn{background:var(--s3);border:none;border-radius:10px;padding:11px 16px;font-size:14px;color:var(--muted);cursor:pointer;font-weight:600;}
-.habit-progress-bar{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:14px;}
-.hpb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.hpb-label{font-size:14px;font-weight:700;}
-.hpb-count{font-size:14px;font-weight:800;color:var(--g);}
-.hpb-track{height:8px;background:var(--s3);border-radius:4px;overflow:hidden;}
-.hpb-fill{height:100%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:4px;transition:width .5s cubic-bezier(.34,1.56,.64,1);}
-.habit-card{background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:border-color .2s,transform .1s;}
-.habit-card.done-habit{border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04);}
-.habit-card:active{transform:scale(.98);}
-.habit-emoji{font-size:24px;width:40px;text-align:center;flex-shrink:0;}
-.habit-info{flex:1;}
-.habit-name{font-size:15px;font-weight:700;margin-bottom:2px;}
-.habit-streak{font-size:12px;color:var(--muted);}
-.habit-streak .streak-fire{color:var(--orange);}
-.habit-dots{display:flex;gap:4px;margin-top:6px;}
-.habit-dot{width:10px;height:10px;border-radius:50%;background:var(--s3);border:1px solid var(--border2);}
-.habit-dot.hit{background:var(--g2);border-color:var(--g2);}
-.habit-dot.today-dot{border-color:var(--g);background:var(--s3);}
-.habit-dot.today-dot.hit{background:var(--g2);border-color:var(--g2);}
-.habit-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--muted2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:14px;}
-.habit-check.checked{background:var(--g2);border-color:var(--g2);color:#000;transform:scale(1.1);}
-@keyframes habitPop{0%{transform:scale(1)}40%{transform:scale(1.25)}70%{transform:scale(.95)}100%{transform:scale(1)}}
-.habit-check.pop{animation:habitPop .35s ease forwards;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(4px);}
+.res-block{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;font-size:15px;line-height:1.75;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:99999;backdrop-filter:blur(4px);}
 .overlay.show{display:flex;}
 .modal{background:var(--s1);border:1px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:430px;}
 .modal-handle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 20px;}
 .modal-title{font-size:19px;font-weight:800;margin-bottom:6px;}
 .modal-desc{font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.55;}
 .modal-input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:14px;font-size:15px;color:var(--text);font-family:inherit;outline:none;margin-bottom:14px;}
-.modal-input:focus{border-color:var(--g);}
-.modal-input::placeholder{color:var(--muted);}
 .modal-btns{display:flex;gap:10px;}
-.btn-cancel{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:14px;font-size:15px;color:var(--muted);cursor:pointer;font-weight:600;}
-.btn-save{flex:2;background:var(--g2);color:#000;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;}
+.btn-cancel{flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:14px;font-size:15px;color:var(--muted);cursor:pointer;touch-action:manipulation;}
+.btn-save{flex:2;background:var(--g2);color:#000;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;touch-action:manipulation;}
+.theme-row{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+.theme-toggle{width:52px;height:30px;border-radius:20px;background:var(--g2);position:relative;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+.theme-knob{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .3s;display:flex;align-items:center;justify-content:center;font-size:13px;pointer-events:none;}
 </style>
 </head>
 <body>
+
 <div class="header">
-<div class="header-row">
-<div class="header-left">
-<div class="header-app">Holy Guidance</div>
-<div class="header-title" id="headerTitle">Home</div>
-<div class="header-date" id="headerDate"></div>
-</div>
-<div class="header-right">
-<button class="hdr-btn back-btn" id="backBtn" onclick="goBack()">←</button>
-<button class="hdr-btn" onclick="openSettings()">⚙️</button>
-</div>
-</div>
+  <div class="header-row">
+    <div>
+      <div class="header-app">Holy Guidance</div>
+      <div class="header-title" id="headerTitle">Home</div>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+    <button class="hdr-btn" id="settingsBtn">⚙️</button>
+  </div>
 </div>
 
+<!-- HOME -->
 <div class="screen active" id="screen-home">
-<div class="greeting" id="greeting">Good morning, Jeff ✦</div>
-<div class="greeting-sub">Here's your day at a glance.</div>
-<div class="stats-grid">
-<div class="stat"><div class="stat-num" id="statJobs">2</div><div class="stat-lbl">Jobs</div></div>
-<div class="stat"><div class="stat-num" id="statTasks">0</div><div class="stat-lbl">Tasks</div></div>
-<div class="stat"><div class="stat-num" id="statBible">📖</div><div class="stat-lbl">Bible</div></div>
-</div>
-<div class="verse-card">
-<div class="verse-chip">✦ Today's Verse</div>
-<div class="verse-body">"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."</div>
-<div class="verse-ref">Proverbs 3:5–6</div>
-</div>
-<div class="journal-cta">
-<div class="jcta-top">
-<div class="jcta-icon">✍️</div>
-<div><div class="jcta-title">Open Your Journal</div><div class="jcta-sub">Reflect, speak, receive guidance</div></div>
-</div>
-<button class="btn-primary" onclick="goTo('journal')">Start Today's Entry →</button>
-</div>
-<div class="card">
-<div class="card-label">Morning Routine</div>
-<div id="morningRoutine"></div>
-</div>
-<div class="card" onclick="goSub('habits')" style="cursor:pointer;">
-<div class="card-label" style="display:flex;justify-content:space-between;align-items:center;">
-<span>Habits Today</span>
-<span style="font-size:12px;color:var(--g);font-weight:700;" id="homeHabitCount">0 / 8</span>
-</div>
-<div style="height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:12px;">
-<div id="homeHabitBar" style="height:100%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:3px;width:0%;transition:width .5s ease;"></div>
-</div>
-<div id="homeHabitDots" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-</div>
-<div class="card">
-<div class="card-label">Quick Tasks</div>
-<div id="homeTaskList"><div style="color:var(--muted);font-size:14px;padding:4px 0;">No tasks yet — add some in Tasks.</div></div>
-</div>
+  <div class="greeting" id="greeting">Good morning, Jeff ✦</div>
+  <div class="greeting-sub">Here's your day at a glance.</div>
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Jobs</div></div>
+    <div class="stat"><div class="stat-num" id="statTasks">0</div><div class="stat-lbl">Tasks</div></div>
+    <div class="stat"><div class="stat-num">📖</div><div class="stat-lbl">Bible</div></div>
+  </div>
+  <div class="verse-card">
+    <div class="verse-chip">✦ Today's Verse</div>
+    <div class="verse-body">"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."</div>
+    <div class="verse-ref">Proverbs 3:5–6</div>
+  </div>
+  <div class="jcta">
+    <div class="jcta-top">
+      <div class="jcta-icon">✍️</div>
+      <div><div class="jcta-title">Open Your Journal</div><div class="jcta-sub">Reflect, speak, receive guidance</div></div>
+    </div>
+    <button class="btn-primary" id="journalCta">Start Today's Entry →</button>
+  </div>
+  <div class="card">
+    <div class="sec-label">Quick Tasks</div>
+    <div id="homeTaskList"><div style="color:var(--muted);font-size:14px;">No tasks yet.</div></div>
+  </div>
 </div>
 
+<!-- JOBS -->
 <div class="screen" id="screen-jobs">
-<div class="connect-pill">
-<svg viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke-linecap="round" stroke-linejoin="round"></path><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-Connect your landscaping app to pull jobs automatically. Showing sample data for now.
-</div>
-<div class="sec-label">Today's Jobs</div>
-<div class="job-card"><div class="job-name">Smith Residence — Lawn Mowing</div><div class="job-detail"><span>📍 142 Oak St</span><span>9:00 AM</span></div><span class="job-tag tag-today">TODAY</span></div>
-<div class="job-card"><div class="job-name">Ridgeline Park Cleanup</div><div class="job-detail"><span>📍 Ridgeline Park</span><span>1:30 PM</span></div><span class="job-tag tag-today">TODAY</span></div>
-<div class="job-card pending"><div class="job-name">Thompson — Mulch Install</div><div class="job-detail"><span>📍 88 Birchwood Dr</span><span>TBD</span></div><span class="job-tag tag-pending">PENDING</span></div>
+  <div class="sec-label">Today's Jobs</div>
+  <div class="job-card"><div class="job-name">Smith Residence — Lawn Mowing</div><div class="job-detail"><span>📍 142 Oak St</span><span>9:00 AM</span></div><span class="job-tag tag-today">TODAY</span></div>
+  <div class="job-card"><div class="job-name">Ridgeline Park Cleanup</div><div class="job-detail"><span>📍 Ridgeline Park</span><span>1:30 PM</span></div><span class="job-tag tag-today">TODAY</span></div>
+  <div class="job-card pending"><div class="job-name">Thompson — Mulch Install</div><div class="job-detail"><span>📍 88 Birchwood Dr</span><span>TBD</span></div><span class="job-tag tag-pending">PENDING</span></div>
 </div>
 
+<!-- TASKS -->
 <div class="screen" id="screen-tasks">
-<div class="task-wrap">
-<div class="card-label">Today's Tasks</div>
-<div id="taskList"></div>
-<div class="add-row">
-<input class="add-input" type="text" id="taskInput" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()">
-<button class="add-btn" onclick="addTask()">+</button>
-</div>
-</div>
+  <div class="card">
+    <div class="sec-label">Today's Tasks</div>
+    <div id="taskList"></div>
+    <div class="add-row">
+      <input class="add-input" type="text" id="taskInput" placeholder="Add a task...">
+      <button class="add-btn" id="addTaskBtn">+</button>
+    </div>
+  </div>
 </div>
 
+<!-- JOURNAL -->
 <div class="screen" id="screen-journal">
-<p class="journal-intro">Talk through these questions — or type your thoughts below. Tap <strong style="color:var(--text);">Get Guidance</strong> and receive your personal word for the day.</p>
-<div class="card" style="padding-bottom:6px;">
-<div class="card-label">Reflect on these</div>
-<div class="q-list">
-<div class="q-row"><div class="q-num">1</div><div><div class="q-label">Start Here</div><div class="q-text">How are you really feeling right now?</div></div></div>
-<div class="q-row"><div class="q-num">2</div><div><div class="q-label">Your Day</div><div class="q-text">What happened today? Walk me through it.</div></div></div>
-<div class="q-row"><div class="q-num">3</div><div><div class="q-label">The Hard Part</div><div class="q-text">What's been the hardest thing lately?</div></div></div>
-<div class="q-row"><div class="q-num">4</div><div><div class="q-label">On Your Heart</div><div class="q-text">What's been weighing on you? What keeps coming back?</div></div></div>
-<div class="q-row"><div class="q-num">5</div><div><div class="q-label">Gratitude</div><div class="q-text">What are you thankful for today, even if it's small?</div></div></div>
-<div class="q-row"><div class="q-num">6</div><div><div class="q-label">Where You Need Help</div><div class="q-text">Where do you feel stuck or like you need God to move?</div></div></div>
-</div>
-</div>
-<div class="record-card">
-<div class="record-hint">Tap the mic and speak through all the questions at once — or type below.</div>
-<div class="mic-wrap"><button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button><div class="mic-ring"></div></div>
-<div class="record-status" id="recordStatus">Tap to start speaking</div>
-<textarea class="transcript" id="transcriptBox" placeholder="Your words will appear here as you speak, or type directly..." rows="5"></textarea>
-</div>
-<div class="err-banner" id="apiError"></div>
-<button class="get-guidance-btn" id="submitBtn" onclick="submitJournal()">Get Guidance ✦</button>
-<div class="ai-response" id="aiResponse">
-<div class="loading-wrap" id="loadingState"><div class="spinner"></div><div class="loading-txt">Reading your heart...</div></div>
-<div id="responseContent" style="display:none;"></div>
-</div>
+  <p class="journal-intro">Work through these questions, then tap Get Guidance for your personal word.</p>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="q-row"><div class="q-num">1</div><div><div class="q-label">Start Here</div><div class="q-text">How are you really feeling right now?</div></div></div>
+    <div class="q-row"><div class="q-num">2</div><div><div class="q-label">Your Day</div><div class="q-text">What happened today? Walk me through it.</div></div></div>
+    <div class="q-row"><div class="q-num">3</div><div><div class="q-label">The Hard Part</div><div class="q-text">What's been the hardest thing lately?</div></div></div>
+    <div class="q-row"><div class="q-num">4</div><div><div class="q-label">On Your Heart</div><div class="q-text">What keeps coming back to you?</div></div></div>
+    <div class="q-row"><div class="q-num">5</div><div><div class="q-label">Gratitude</div><div class="q-text">What are you thankful for today?</div></div></div>
+    <div class="q-row"><div class="q-num">6</div><div><div class="q-label">Where You Need Help</div><div class="q-text">Where do you need God to move?</div></div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px;text-align:center;">
+    <div class="record-hint">Tap the mic and speak — or type below.</div>
+    <div class="mic-wrap"><button class="mic-btn" id="micBtn">🎤</button></div>
+    <div class="record-status" id="recordStatus">Tap to start speaking</div>
+  </div>
+  <textarea class="transcript" id="transcriptBox" placeholder="Your words appear here as you speak, or type directly..." rows="5"></textarea>
+  <div class="err-banner" id="apiError"></div>
+  <button class="get-guidance-btn" id="submitBtn">Get Guidance ✦</button>
+  <div class="ai-resp" id="aiResponse">
+    <div id="loadingState" style="text-align:center;padding:20px;"><div class="spinner"></div><div style="color:var(--muted);font-size:14px;">Reading your heart...</div></div>
+    <div id="responseContent"></div>
+  </div>
 </div>
 
+<!-- MORE -->
 <div class="screen" id="screen-more">
-<div class="sec-label">Your Daily Plans</div>
-<div class="more-hub-card" onclick="goSub('workout')">
-<div class="mhc-icon" style="background:rgba(74,222,128,.1);">💪</div>
-<div class="mhc-body"><div class="mhc-name">Workout Plan</div><div class="mhc-desc">5-day split · Push, Pull, Cardio, Legs, Full Body</div></div>
-<div class="mhc-arrow">›</div>
-</div>
-<div class="more-hub-card" onclick="goSub('diet')">
-<div class="mhc-icon" style="background:rgba(251,146,60,.1);">🥩</div>
-<div class="mhc-body"><div class="mhc-name">Diet &amp; Nutrition</div><div class="mhc-desc">High protein bulking · ~3,200 cal · 200g protein</div></div>
-<div class="mhc-arrow">›</div>
-</div>
-<div class="more-hub-card" onclick="goSub('bible')">
-<div class="mhc-icon" style="background:rgba(252,211,77,.08);">📖</div>
-<div class="mhc-body"><div class="mhc-name">Bible Plan</div><div class="mhc-desc">Read through the Bible · Daily chapter</div></div>
-<div class="mhc-arrow">›</div>
-</div>
-<div class="more-hub-card" onclick="goSub('schedule')">
-<div class="mhc-icon" style="background:rgba(96,165,250,.1);">📅</div>
-<div class="mhc-body"><div class="mhc-name">Schedule</div><div class="mhc-desc">Your week at a glance · Add events</div></div>
-<div class="mhc-arrow">›</div>
-</div>
-<div class="more-hub-card" onclick="goSub('habits')">
-<div class="mhc-icon" style="background:rgba(167,139,250,.1);">🔥</div>
-<div class="mhc-body"><div class="mhc-name">Habit Tracker</div><div class="mhc-desc" id="habitsHubDesc">Daily habits · Streaks · 7-day history</div></div>
-<div class="mhc-arrow">›</div>
-</div>
+  <div class="sec-label">Your Daily Plans</div>
+  <div class="more-card" id="goto-workout"><div class="mc-icon" style="background:rgba(74,222,128,.1);">💪</div><div><div class="mc-name">Workout Plan</div><div class="mc-desc">5-day split · Push, Pull, Legs...</div></div><div class="mc-arrow">›</div></div>
+  <div class="more-card" id="goto-diet"><div class="mc-icon" style="background:rgba(251,146,60,.1);">🥩</div><div><div class="mc-name">Diet & Nutrition</div><div class="mc-desc">High protein · ~3,100 cal</div></div><div class="mc-arrow">›</div></div>
+  <div class="more-card" id="goto-bible"><div class="mc-icon" style="background:rgba(252,211,77,.08);">📖</div><div><div class="mc-name">Bible Plan</div><div class="mc-desc">Read through the Bible daily</div></div><div class="mc-arrow">›</div></div>
+  <div class="more-card" id="goto-habits"><div class="mc-icon" style="background:rgba(167,139,250,.1);">🔥</div><div><div class="mc-name">Habit Tracker</div><div class="mc-desc">Daily habits · Streaks</div></div><div class="mc-arrow">›</div></div>
 </div>
 
-<div class="screen" id="sub-workout">
-<div style="background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:14px;display:flex;gap:14px;align-items:center;">
-<div style="font-size:32px;">🏋️</div>
-<div style="flex:1;"><div style="font-size:16px;font-weight:700;margin-bottom:4px;">Jeff · 6'0" · 170 lbs</div><div style="font-size:13px;color:var(--muted);">Lean bulk · Morning training · 5 days/week</div></div>
-<div style="text-align:right;"><div style="font-size:13px;color:var(--g);font-weight:700;">7:00 AM</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Gym time</div></div>
-</div>
-<div class="week-strip" id="workoutStrip"></div>
-<div id="workoutContent"></div>
-</div>
-
-<div class="screen" id="sub-diet">
-<div style="background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:var(--muted);line-height:1.6;">
-<span style="color:var(--g);font-weight:700;">6'0" · 170 lbs · Lean bulk</span> — Timed around your 4 AM wake and 7 AM gym. Fasted run at 4, light fuel before lifting, big meals after.
-</div>
-<div class="macro-row">
-<div class="macro-card"><div class="macro-num" style="color:var(--gold);">3,100</div><div class="macro-lbl">Calories</div></div>
-<div class="macro-card"><div class="macro-num" style="color:var(--g);">190g</div><div class="macro-lbl">Protein</div></div>
-<div class="macro-card"><div class="macro-num" style="color:var(--blue);">340g</div><div class="macro-lbl">Carbs</div></div>
-<div class="macro-card"><div class="macro-num" style="color:var(--orange);">75g</div><div class="macro-lbl">Fat</div></div>
-</div>
-<div class="card" style="margin-bottom:14px;">
-<div class="card-label">Daily Macros</div>
-<div class="macro-bar-label"><span>Protein</span><span>190g</span></div>
-<div class="macro-bar"><div class="macro-bar-fill" style="width:72%;background:var(--g);"></div></div>
-<div class="macro-bar-label"><span>Carbs</span><span>340g</span></div>
-<div class="macro-bar"><div class="macro-bar-fill" style="width:56%;background:var(--blue);"></div></div>
-<div class="macro-bar-label"><span>Fat</span><span>75g</span></div>
-<div class="macro-bar"><div class="macro-bar-fill" style="width:33%;background:var(--orange);"></div></div>
-</div>
-<div class="sec-label">Meal Plan</div>
-<div class="meal-card" style="opacity:.75;"><div class="meal-header"><div class="meal-icon">🙏</div><div><div class="meal-time-label">Fasted Window</div><div class="meal-time">4:00 – 6:30 AM · Prayer, run, cold shower, stretch</div></div></div><div style="font-size:13px;color:var(--muted);line-height:1.5;">Water only. Your run is fasted — that's intentional. Burns fat and sharpens focus before the day begins.</div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">⚡</div><div><div class="meal-time-label">Pre-Workout</div><div class="meal-time">6:30 AM · Before leaving for gym</div></div><div class="meal-cals">~280 cal</div></div><div class="meal-item">Banana</div><div class="meal-item">2 rice cakes with honey</div><div class="meal-item">Black coffee</div><div class="meal-macros"><span class="mmacro">P: 5g</span><span class="mmacro">C: 55g</span><span class="mmacro">F: 2g</span></div></div>
-<div style="display:flex;align-items:center;gap:10px;margin:4px 0 10px;padding:0 4px;"><div style="flex:1;height:1px;background:var(--border);"></div><div style="font-size:11px;font-weight:700;color:var(--g);letter-spacing:.5px;">🏋️ GYM 7:00 – 8:30 AM</div><div style="flex:1;height:1px;background:var(--border);"></div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">💪</div><div><div class="meal-time-label">Post-Workout Shake</div><div class="meal-time">8:30 AM · Right after gym</div></div><div class="meal-cals">~380 cal</div></div><div class="meal-item">2 scoops whey protein (water or milk)</div><div class="meal-item">Banana</div><div class="meal-item">Handful of oats blended in</div><div class="meal-macros"><span class="mmacro">P: 55g</span><span class="mmacro">C: 50g</span><span class="mmacro">F: 5g</span></div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">🌅</div><div><div class="meal-time-label">Breakfast</div><div class="meal-time">9:00 AM · Start of work</div></div><div class="meal-cals">~750 cal</div></div><div class="meal-item">5 scrambled eggs</div><div class="meal-item">1 cup oatmeal with honey &amp; blueberries</div><div class="meal-item">2 slices whole wheat toast</div><div class="meal-macros"><span class="mmacro">P: 50g</span><span class="mmacro">C: 90g</span><span class="mmacro">F: 22g</span></div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">🍗</div><div><div class="meal-time-label">Lunch</div><div class="meal-time">12:30 – 1:00 PM</div></div><div class="meal-cals">~800 cal</div></div><div class="meal-item">8 oz grilled chicken breast</div><div class="meal-item">1.5 cups brown rice</div><div class="meal-item">Broccoli + spinach salad, olive oil</div><div class="meal-macros"><span class="mmacro">P: 60g</span><span class="mmacro">C: 85g</span><span class="mmacro">F: 18g</span></div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">☕</div><div><div class="meal-time-label">Afternoon Snack</div><div class="meal-time">3:30 PM</div></div><div class="meal-cals">~390 cal</div></div><div class="meal-item">2 cups Greek yogurt (plain)</div><div class="meal-item">Almonds + 1 apple</div><div class="meal-macros"><span class="mmacro">P: 30g</span><span class="mmacro">C: 38g</span><span class="mmacro">F: 14g</span></div></div>
-<div class="meal-card"><div class="meal-header"><div class="meal-icon">🥩</div><div><div class="meal-time-label">Dinner</div><div class="meal-time">7:00 – 8:00 PM</div></div><div class="meal-cals">~700 cal</div></div><div class="meal-item">8 oz lean beef, steak, or salmon</div><div class="meal-item">Medium sweet potato</div><div class="meal-item">Mixed roasted vegetables</div><div class="meal-macros"><span class="mmacro">P: 55g</span><span class="mmacro">C: 45g</span><span class="mmacro">F: 20g</span></div></div>
+<!-- WORKOUT SUB -->
+<div class="screen" id="screen-workout">
+  <div class="card" style="text-align:center;padding:32px 20px;">
+    <div style="font-size:48px;margin-bottom:12px;" id="workoutEmoji">💪</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px;" id="workoutTitle">Push Day</div>
+    <div style="font-size:14px;color:var(--muted);" id="workoutSub">Chest · Shoulders · Triceps</div>
+  </div>
+  <div class="card" id="exerciseList"></div>
+  <button class="btn-primary" id="backFromWorkout" style="margin-top:8px;">← Back</button>
 </div>
 
-<div class="screen" id="sub-bible">
-<div class="bible-progress-card">
-<div class="bpc-top"><div class="bpc-title">Read Through the Bible</div><div class="bpc-day" id="bibleDay">Day 174</div></div>
-<div class="bpc-bar"><div class="bpc-fill" id="bibleFill" style="width:47.7%;"></div></div>
-<div class="bpc-pct" id="biblePct">47.7% complete · 191 days remaining</div>
-</div>
-<div class="reading-card">
-<div class="rc-label">Today's Reading</div>
-<div class="rc-book" id="todayBook">Psalms</div>
-<div class="rc-chapters" id="todayChapters">Chapters 44, 45, 46</div>
-<div class="chapter-checks" id="chapterChecks"></div>
-<div class="reading-note" id="readingNote">The Psalms speak to every human emotion — doubt, joy, grief, hope. Today's chapters include Psalm 46, one of the great songs of trust: "God is our refuge and strength, an ever-present help in trouble."</div>
-</div>
-<div class="sec-label">Recent Readings</div>
-<div class="prev-readings">
-<div class="prev-row"><span class="prev-ref">Psalms 41–43</span><span class="prev-done">✓ Done</span></div>
-<div class="prev-row"><span class="prev-ref">Psalms 38–40</span><span class="prev-done">✓ Done</span></div>
-<div class="prev-row"><span class="prev-ref">Psalms 35–37</span><span class="prev-done">✓ Done</span></div>
-<div class="prev-row"><span class="prev-ref">Psalms 32–34</span><span class="prev-done">✓ Done</span></div>
-<div class="prev-row"><span class="prev-ref">Psalms 29–31</span><span class="prev-done">✓ Done</span></div>
-</div>
+<!-- DIET SUB -->
+<div class="screen" id="screen-diet">
+  <div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="flex:1;background:var(--s3);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--gold);">3,100</div><div style="font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;font-weight:700;">Calories</div></div>
+    <div style="flex:1;background:var(--s3);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--g);">190g</div><div style="font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;font-weight:700;">Protein</div></div>
+    <div style="flex:1;background:var(--s3);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--blue);">340g</div><div style="font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;font-weight:700;">Carbs</div></div>
+  </div></div>
+  <div class="card"><div class="sec-label">Meals</div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-weight:700;">⚡ Pre-Workout (6:30 AM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">Banana · Rice cakes · Black coffee</div></div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-weight:700;">💪 Post-Workout Shake (8:30 AM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">2 scoops whey · Banana · Oats</div></div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-weight:700;">🌅 Breakfast (9:00 AM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">5 eggs · Oatmeal · 2 toast</div></div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-weight:700;">🍗 Lunch (12:30 PM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">8oz chicken · Brown rice · Salad</div></div>
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-weight:700;">☕ Snack (3:30 PM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">Greek yogurt · Almonds · Apple</div></div>
+    <div style="padding:10px 0;"><div style="font-weight:700;">🥩 Dinner (7:00 PM)</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">8oz steak/salmon · Sweet potato · Veggies</div></div>
+  </div>
+  <button class="btn-primary" id="backFromDiet">← Back</button>
 </div>
 
-<div class="screen" id="sub-schedule">
-<div class="week-cal"><div class="wc-days" id="weekCalDays"></div></div>
-<div class="sec-label" id="todayEventsLabel">Today's Events</div>
-<div id="eventsList"></div>
-<button class="add-event-btn" onclick="toggleEventForm()">+ Add Event</button>
-<div class="event-form" id="eventForm">
-<input class="ev-input" type="text" id="evTitle" placeholder="Event name...">
-<div class="ev-row2">
-<input class="ev-input" type="time" id="evTime" style="flex:1;">
-<button class="ev-save-btn" onclick="saveEvent()">Save</button>
-<button class="ev-cancel-btn" onclick="toggleEventForm()">Cancel</button>
-</div>
-</div>
-</div>
-
-<div class="screen" id="sub-habits">
-<div class="habit-progress-bar">
-<div class="hpb-row"><div class="hpb-label">Today's Progress</div><div class="hpb-count" id="habitProgressCount">0 / 8</div></div>
-<div class="hpb-track"><div class="hpb-fill" id="habitProgressFill" style="width:0%"></div></div>
-</div>
-<div id="habitList"></div>
+<!-- BIBLE SUB -->
+<div class="screen" id="screen-bible">
+  <div class="card" style="background:var(--g-dim);border-color:rgba(74,222,128,.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:700;">Read Through the Bible</div>
+      <div style="background:rgba(74,222,128,.15);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:var(--g);" id="bibleDay">Day 174</div>
+    </div>
+    <div style="height:6px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden;margin-bottom:8px;"><div style="height:100%;background:var(--g);border-radius:3px;width:47.7%;" id="bibleFill"></div></div>
+    <div style="font-size:12px;color:var(--g);font-weight:700;" id="biblePct">47.7% complete</div>
+  </div>
+  <div class="card">
+    <div class="sec-label">Today's Reading — Psalms 44–46</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;" id="chapterChecks"></div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;background:var(--s3);border-radius:12px;padding:12px;">Psalm 46 is one of the great songs of trust: "God is our refuge and strength, an ever-present help in trouble."</div>
+  </div>
+  <button class="btn-primary" id="backFromBible">← Back</button>
 </div>
 
-<nav class="nav">
-<button class="nav-btn active" id="nav-home" onclick="goTo('home')">
-<svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"></path><path d="M9 21V12h6v9"></path></svg>Home
-</button>
-<button class="nav-btn" id="nav-jobs" onclick="goTo('jobs')">
-<svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 6 5 10c0 6 7 12 7 12s7-6 7-12c0-4-3-8-7-8z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>Jobs
-</button>
-<button class="nav-btn" id="nav-tasks" onclick="goTo('tasks')">
-<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>Tasks
-</button>
-<button class="nav-btn" id="nav-journal" onclick="goTo('journal')">
-<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Journal
-</button>
-<button class="nav-btn" id="nav-more" onclick="goTo('more')">
-<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"></circle></svg>More
-</button>
+<!-- HABITS SUB -->
+<div class="screen" id="screen-habits">
+  <div class="card" style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:700;">Today's Progress</div>
+      <div style="font-size:14px;font-weight:800;color:var(--g);" id="habitCount">0 / 8</div>
+    </div>
+    <div style="height:8px;background:var(--s3);border-radius:4px;overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:4px;transition:width .5s;" id="habitBar" style="width:0%"></div></div>
+  </div>
+  <div id="habitList"></div>
+  <button class="btn-primary" id="backFromHabits" style="margin-top:8px;">← Back</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <button class="nb active" id="nb-home"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</button>
+  <button class="nb" id="nb-jobs"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 6 5 10c0 6 7 12 7 12s7-6 7-12c0-4-3-8-7-8z"/><circle cx="12" cy="10" r="2.5"/></svg>Jobs</button>
+  <button class="nb" id="nb-tasks"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks</button>
+  <button class="nb" id="nb-journal"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Journal</button>
+  <button class="nb" id="nb-more"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>More</button>
 </nav>
 
 <!-- SETTINGS MODAL -->
 <div class="overlay" id="settingsModal">
-<div class="modal">
-<div class="modal-handle"></div>
-<div class="modal-title">Settings</div>
-<!-- THEME TOGGLE -->
-<div style="display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
-<div>
-<div style="font-size:15px;font-weight:700;color:var(--text);">Appearance</div>
-<div style="font-size:12px;color:var(--muted);margin-top:2px;" id="themeLabel">Dark mode</div>
-</div>
-<div onclick="toggleTheme()" id="themeToggle" style="width:52px;height:30px;border-radius:20px;background:var(--g2);position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;">
-<div id="themeKnob" style="position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .3s;display:flex;align-items:center;justify-content:center;font-size:13px;">🌙</div>
-</div>
-</div>
-<div class="modal-desc">Enter your Anthropic API key to power the AI Journal. It stays on your device only.</div>
-<input class="modal-input" type="password" id="apiKeyInput" placeholder="sk-ant-...">
-<div class="modal-btns">
-<button class="btn-cancel" onclick="closeSettings()">Cancel</button>
-<button class="btn-save" onclick="saveSettings()">Save Key</button>
-</div>
-</div>
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Settings</div>
+    <div class="theme-row">
+      <div>
+        <div style="font-size:15px;font-weight:700;">Appearance</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="themeLabel">Dark mode</div>
+      </div>
+      <div class="theme-toggle" id="themeToggle"><div class="theme-knob" id="themeKnob">🌙</div></div>
+    </div>
+    <div class="modal-desc">Enter your Anthropic API key to power the AI Journal.</div>
+    <input class="modal-input" type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <div class="modal-btns">
+      <button class="btn-cancel" id="cancelSettings">Cancel</button>
+      <button class="btn-save" id="saveSettings">Save Key</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// THEME
-function applyTheme(theme){
-  document.documentElement.setAttribute("data-theme",theme);
-  localStorage.setItem("hg_theme",theme);
-  var knob=document.getElementById("themeKnob");
-  var lbl=document.getElementById("themeLabel");
-  if(!knob)return;
-  if(theme==="light"){knob.style.transform="translateX(22px)";knob.textContent="☀️";if(lbl)lbl.textContent="Light mode";}
-  else{knob.style.transform="translateX(0)";knob.textContent="🌙";if(lbl)lbl.textContent="Dark mode";}
-}
-function toggleTheme(){
-  var current=localStorage.getItem("hg_theme")||"dark";
-  applyTheme(current==="dark"?"light":"dark");
-}
-applyTheme(localStorage.getItem("hg_theme")||"dark");
+// ── State ──
+var tasks = JSON.parse(localStorage.getItem('hg_tasks') || '[]');
+var apiKey = localStorage.getItem('hg_apikey') || '';
+var habitLog = JSON.parse(localStorage.getItem('hg_habits') || '{}');
+var bibleRead = JSON.parse(localStorage.getItem('hg_bible') || '{}');
+var exDone = JSON.parse(localStorage.getItem('hg_ex') || '{}');
+var recognition = null, isRecording = false;
 
-// STATE
-var tasks=JSON.parse(localStorage.getItem("hg_tasks")||"[]");
-var apiKey=localStorage.getItem("hg_apikey")||"";
-var exDone=JSON.parse(localStorage.getItem("hg_exercises")||"{}");
-var bibleRead=JSON.parse(localStorage.getItem("hg_bible")||"{}");
-var events=JSON.parse(localStorage.getItem("hg_events")||"[]");
-var habitLog=JSON.parse(localStorage.getItem("hg_habits")||"{}");
-var recognition=null,isRecording=false;
-
-const HABITS=[
-{id:"prayer",emoji:"🙏",name:"Prayer",time:"4:00 AM"},
-{id:"run",emoji:"🏃",name:"Morning Run",time:"4:15 AM"},
-{id:"cold",emoji:"🚿",name:"Cold Shower",time:"4:45 AM"},
-{id:"stretch",emoji:"🧘",name:"Stretch",time:"5:00 AM"},
-{id:"quiet",emoji:"✝️",name:"Quiet Time with God",time:"5:15 AM"},
-{id:"gym",emoji:"💪",name:"Gym",time:"7:00 AM"},
-{id:"bible",emoji:"📖",name:"Bible Reading",time:"5:30 AM"},
-{id:"water",emoji:"💧",name:"Drink Water (8 cups)",time:"All day"},
+var HABITS = [
+  {id:'prayer',emoji:'🙏',name:'Prayer'},
+  {id:'run',emoji:'🏃',name:'Morning Run'},
+  {id:'cold',emoji:'🚿',name:'Cold Shower'},
+  {id:'stretch',emoji:'🧘',name:'Stretch'},
+  {id:'quiet',emoji:'✝️',name:'Quiet Time'},
+  {id:'gym',emoji:'💪',name:'Gym'},
+  {id:'bible',emoji:'📖',name:'Bible Reading'},
+  {id:'water',emoji:'💧',name:'Drink Water'},
 ];
 
-var currentTab="home",currentSub=null;
-
-const WORKOUT={
-0:{type:"rest"},
-1:{type:"Push",label:"Push",emoji:"💪",muscle:"Chest · Shoulders · Triceps",exercises:[{n:"Bench Press",s:"4×8"},{n:"Incline DB Press",s:"3×10"},{n:"Cable Flyes",s:"3×12"},{n:"Overhead Press",s:"4×8"},{n:"Lateral Raises",s:"3×15"},{n:"Tricep Pushdowns",s:"3×12"},{n:"Skull Crushers",s:"3×10"}]},
-2:{type:"Pull",label:"Pull",emoji:"🏋️",muscle:"Back · Biceps",exercises:[{n:"Deadlift",s:"4×5"},{n:"Pull-ups",s:"3×8"},{n:"Barbell Row",s:"4×8"},{n:"Lat Pulldown",s:"3×12"},{n:"Face Pulls",s:"3×15"},{n:"Barbell Curl",s:"3×12"},{n:"Hammer Curls",s:"3×12"}]},
-3:{type:"Cardio",label:"Cardio",emoji:"🏃",muscle:"30–40 min run · or HIIT",exercises:[{n:"Warm-up walk",s:"5 min"},{n:"Steady state run",s:"30 min"},{n:"Cool-down walk",s:"5 min"},{n:"Stretching",s:"10 min"}]},
-4:{type:"Legs",label:"Legs",emoji:"🦵",muscle:"Quads · Hamstrings · Glutes · Calves",exercises:[{n:"Squat",s:"4×8"},{n:"Romanian Deadlift",s:"3×10"},{n:"Leg Press",s:"3×12"},{n:"Walking Lunges",s:"3×12"},{n:"Leg Extension",s:"3×15"},{n:"Leg Curl",s:"3×15"},{n:"Calf Raises",s:"4×20"}]},
-5:{type:"Full Body",label:"Full Body",emoji:"🔥",muscle:"Full Body + Core",exercises:[{n:"Run",s:"30 min"},{n:"Pull-ups",s:"3×max"},{n:"Push-ups",s:"3×max"},{n:"Plank",s:"3×60s"},{n:"Crunches",s:"3×20"},{n:"Russian Twists",s:"3×20"}]},
-6:{type:"rest"}
+var WORKOUT = {
+  0:{type:'rest'},
+  1:{label:'Push Day',emoji:'💪',sub:'Chest · Shoulders · Triceps',ex:['Bench Press 4×8','Incline DB Press 3×10','Cable Flyes 3×12','Overhead Press 4×8','Lateral Raises 3×15','Tricep Pushdowns 3×12']},
+  2:{label:'Pull Day',emoji:'🏋️',sub:'Back · Biceps',ex:['Deadlift 4×5','Pull-ups 3×8','Barbell Row 4×8','Lat Pulldown 3×12','Face Pulls 3×15','Barbell Curl 3×12']},
+  3:{label:'Cardio',emoji:'🏃',sub:'30–40 min run or HIIT',ex:['Warm-up walk 5 min','Steady run 30 min','Cool-down 5 min','Stretching 10 min']},
+  4:{label:'Leg Day',emoji:'🦵',sub:'Quads · Hamstrings · Glutes',ex:['Squat 4×8','Romanian Deadlift 3×10','Leg Press 3×12','Walking Lunges 3×12','Leg Curl 3×15','Calf Raises 4×20']},
+  5:{label:'Full Body',emoji:'🔥',sub:'Full Body + Core',ex:['Run 30 min','Pull-ups 3×max','Push-ups 3×max','Plank 3×60s','Crunches 3×20']},
+  6:{type:'rest'}
 };
 
-const DAY_NAMES=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
-
-function init(){
-var now=new Date();
-document.getElementById("headerDate").textContent=DAY_NAMES[now.getDay()]+", "+MONTH_NAMES[now.getMonth()]+" "+now.getDate();
-var h=now.getHours();
-var greet=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
-document.getElementById("greeting").textContent=greet+", Jeff ✦";
-renderTasks();buildMorningRoutine();buildWorkoutStrip();buildWorkoutContent();buildBible();buildSchedule();buildHomeHabits();
+// ── Theme ──
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('hg_theme', t);
+  var knob = document.getElementById('themeKnob');
+  var lbl = document.getElementById('themeLabel');
+  if (knob) { knob.style.transform = t === 'light' ? 'translateX(22px)' : 'translateX(0)'; knob.textContent = t === 'light' ? '☀️' : '🌙'; }
+  if (lbl) lbl.textContent = t === 'light' ? 'Light mode' : 'Dark mode';
 }
+applyTheme(localStorage.getItem('hg_theme') || 'dark');
 
-function goTo(tab){
-currentTab=tab;currentSub=null;
-document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
-document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active");});
-document.getElementById("screen-"+tab).classList.add("active");
-document.getElementById("nav-"+tab).classList.add("active");
-document.getElementById("backBtn").style.display="none";
-var titles={home:"Home",jobs:"Today's Jobs",tasks:"Tasks",journal:"Journal",more:"More"};
-document.getElementById("headerTitle").textContent=titles[tab];
-}
-
-function goSub(sub){
-currentSub=sub;
-document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
-document.getElementById("sub-"+sub).classList.add("active");
-document.getElementById("backBtn").style.display="flex";
-var titles={workout:"Workout Plan",diet:"Diet & Nutrition",bible:"Bible Plan",schedule:"My Schedule",habits:"Habit Tracker"};
-document.getElementById("headerTitle").textContent=titles[sub];
-if(sub==="habits")buildHabits();
+// ── Nav ──
+function goTo(tab) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('active'); });
+  var s = document.getElementById('screen-' + tab);
+  var b = document.getElementById('nb-' + tab);
+  if (s) s.classList.add('active');
+  if (b) b.classList.add('active');
+  var titles = {home:'Home',jobs:"Today's Jobs",tasks:'Tasks',journal:'Journal',more:'More',workout:'Workout Plan',diet:'Diet & Nutrition',bible:'Bible Plan',habits:'Habit Tracker'};
+  document.getElementById('headerTitle').textContent = titles[tab] || tab;
+  if (tab === 'habits') buildHabits();
+  if (tab === 'workout') buildWorkout();
+  if (tab === 'bible') buildBible();
 }
 
-function goBack(){goTo("more");}
-
-function openSettings(){
-var el=document.getElementById("settingsModal");
-el.classList.add("show");
-if(apiKey)document.getElementById("apiKeyInput").value=apiKey;
-var saved=localStorage.getItem("hg_theme")||"dark";
-applyTheme(saved);
-}
-function closeSettings(){document.getElementById("settingsModal").classList.remove("show");}
-function saveSettings(){
-apiKey=document.getElementById("apiKeyInput").value.trim();
-localStorage.setItem("hg_apikey",apiKey);
-closeSettings();
-}
-
-function dateKey(d){return d.toISOString().slice(0,10);}
-
-function getStreak(id){
-var streak=0;var today=new Date();
-for(var i=0;i<365;i++){
-var d=new Date(today);d.setDate(d.getDate()-i);
-var key=dateKey(d)+"_"+id;
-if(habitLog[key])streak++;
-else if(i>0)break;
-}
-return streak;
-}
-
-function getLast7(id){
-var today=new Date();var dots=[];
-for(var i=6;i>=0;i--){
-var d=new Date(today);d.setDate(d.getDate()-i);
-var key=dateKey(d)+"_"+id;
-dots.push({hit:!!habitLog[key],isToday:i===0});
-}
-return dots;
-}
-
-function buildHabits(){
-var today=new Date();var todayStr=dateKey(today);
-var list=document.getElementById("habitList");
-var done=HABITS.filter(function(h){return habitLog[todayStr+"_"+h.id];}).length;
-var total=HABITS.length;
-var pct=Math.round((done/total)*100);
-document.getElementById("habitProgressCount").textContent=done+" / "+total;
-document.getElementById("habitProgressFill").style.width=pct+"%";
-var desc=document.getElementById("habitsHubDesc");
-if(desc)desc.textContent=done+"/"+total+" done today · Keep the streak alive";
-list.innerHTML=HABITS.map(function(h){
-var todayKey=todayStr+"_"+h.id;
-var checked=!!habitLog[todayKey];
-var streak=getStreak(h.id);
-var dots=getLast7(h.id);
-var streakTxt=streak>0?"<span class='streak-fire'>🔥</span> "+streak+" day streak":"No streak yet — start today!";
-var dotsHtml=dots.map(function(d){return"<div class='habit-dot "+(d.hit?"hit":"")+" "+(d.isToday?"today-dot":"")+"'></div>";}).join("");
-return"<div class='habit-card "+(checked?"done-habit":"")+"'id='hcard-"+h.id+"'>"+
-"<div class='habit-emoji'>"+h.emoji+"</div>"+
-"<div class='habit-info'>"+
-"<div class='habit-name'>"+h.name+"</div>"+
-"<div class='habit-streak'>"+streakTxt+"</div>"+
-"<div class='habit-dots'>"+dotsHtml+"</div>"+
-"</div>"+
-"<div class='habit-check "+(checked?"checked":"")+"'id='hchk-"+h.id+"' onclick='toggleHabit(\""+h.id+"\")'>"+( checked?"✓":"")+"</div>"+
-"</div>";
-}).join("");
-}
-
-function toggleHabit(id){
-var today=new Date();var key=dateKey(today)+"_"+id;
-if(habitLog[key])delete habitLog[key];else habitLog[key]=true;
-localStorage.setItem("hg_habits",JSON.stringify(habitLog));
-var chk=document.getElementById("hchk-"+id);
-if(chk){chk.classList.add("pop");setTimeout(function(){chk.classList.remove("pop");},400);}
-buildHabits();buildHomeHabits();
-}
-
-function buildHomeHabits(){
-var todayStr=dateKey(new Date());
-var done=HABITS.filter(function(h){return habitLog[todayStr+"_"+h.id];}).length;
-var total=HABITS.length;var pct=Math.round((done/total)*100);
-var countEl=document.getElementById("homeHabitCount");
-var barEl=document.getElementById("homeHabitBar");
-var dotsEl=document.getElementById("homeHabitDots");
-if(!countEl)return;
-countEl.textContent=done+" / "+total;
-barEl.style.width=pct+"%";
-dotsEl.innerHTML=HABITS.map(function(h){
-var checked=!!habitLog[todayStr+"_"+h.id];
-return"<div title='"+h.name+"' style='display:flex;align-items:center;gap:4px;background:var(--s3);border-radius:20px;padding:4px 10px;border:1px solid "+(checked?"rgba(74,222,128,.3)":"var(--border)")+";transition:all .3s;'>"+
-"<span style='font-size:14px;'>"+h.emoji+"</span>"+
-"<span style='font-size:11px;font-weight:600;color:"+(checked?"var(--g)":"var(--muted)")+";'>"+( checked?"✓":h.name.split(" ")[0])+"</span>"+
-"</div>";
-}).join("");
-}
-
-function buildMorningRoutine(){
-var now=new Date(),h=now.getHours(),m=now.getMinutes();
-var mins=h*60+m;
-var routine=[
-{time:"4:00 AM",label:"Wake Up",detail:"Prayer & run",emoji:"🙏",start:240},
-{time:"5:00 AM",label:"Stretch & Quiet Time",detail:"Time with God",emoji:"✝️",start:300},
-{time:"6:30 AM",label:"Pre-Workout",detail:"Light fuel before gym",emoji:"⚡",start:390},
-{time:"7:00 AM",label:"Gym",detail:"Lift",emoji:"💪",start:420},
-{time:"9:00 AM",label:"Work",detail:"Head in + focused",emoji:"🏗️",start:540}
-];
-var el=document.getElementById("morningRoutine");
-el.innerHTML=routine.map(function(r,i){
-var next=routine[i+1];
-var active=mins>=r.start&&(!next||mins<next.start);
-var done=next&&mins>=next.start;
-return"<div style='display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);"+(i===routine.length-1?"border-bottom:none;":"")+"'>"
-+"<div style='font-size:18px;opacity:"+(done?".4":"1")+"'>"+r.emoji+"</div>"
-+"<div style='flex:1;'>"
-+"<div style='font-size:14px;font-weight:"+(active?"700":"500")+";color:"+(done?"var(--muted)":active?"var(--g)":"var(--text)")+";"+(done?"text-decoration:line-through;":"")+"'>"+r.label+"</div>"
-+"<div style='font-size:12px;color:var(--muted);margin-top:1px;'>"+r.time+" · "+r.detail+"</div>"
-+"</div>"
-+(active?"<div style='font-size:11px;font-weight:700;color:var(--g);background:rgba(74,222,128,.1);padding:3px 10px;border-radius:20px;'>NOW</div>":"")
-+(done?"<div style='font-size:13px;color:var(--muted);'>✓</div>":"")
-+"</div>";
-}).join("");
-}
-
-function renderTasks(){
-var list=document.getElementById("taskList");
-list.innerHTML=tasks.length?tasks.map(function(t,i){return"<div class='task-item'><div class='task-check "+(t.done?"done":"")+"' onclick='toggleTask("+i+")' ></div><span class='task-text "+(t.done?"done":"")+"'>"+t.text+"</span></div>";}).join(""):"<div style='color:var(--muted);font-size:14px;padding:10px 0;'>No tasks yet.</div>";
-var rem=tasks.filter(function(t){return!t.done;});
-document.getElementById("statTasks").textContent=rem.length;
-var hl=document.getElementById("homeTaskList");
-hl.innerHTML=rem.length?rem.slice(0,3).map(function(t){return"<div class='qt-row'><span class='qt-dot'></span>"+t.text+"</div>";}).join(""):"<div style='color:var(--muted);font-size:14px;'>All done! 🎉</div>";
-}
-
-function toggleTask(i){tasks[i].done=!tasks[i].done;localStorage.setItem("hg_tasks",JSON.stringify(tasks));renderTasks();}
-function addTask(){
-var inp=document.getElementById("taskInput"),txt=inp.value.trim();
-if(!txt)return;tasks.push({text:txt,done:false});
-localStorage.setItem("hg_tasks",JSON.stringify(tasks));inp.value="";renderTasks();
-}
-
-function buildWorkoutStrip(){
-var now=new Date(),today=now.getDay();
-var strip=document.getElementById("workoutStrip");
-var monday=new Date(now);monday.setDate(now.getDate()-(today===0?6:today-1));
-var html="";
-for(var i=0;i<7;i++){
-var d=new Date(monday);d.setDate(monday.getDate()+i);
-var dow=d.getDay();var w=WORKOUT[dow];
-var isToday=dow===today;var isRest=w.type==="rest";
-html+="<div class='day-pill "+(isToday?"today":"")+" "+(isRest?"rest":"")+"'>"
-+"<div class='dp-label'>"+DAY_NAMES[dow]+"</div>"
-+"<div class='dp-name'>"+(isRest?"Rest":w.label)+"</div>"
-+"</div>";
-}
-strip.innerHTML=html;
-}
-
-function buildWorkoutContent(){
-var today=new Date().getDay();var w=WORKOUT[today];
-var el=document.getElementById("workoutContent");
-if(w.type==="rest"){
-el.innerHTML="<div class='rest-card'><div class='rest-emoji'>😴</div><div class='rest-title'>Rest Day</div><div class='rest-sub'>Recovery is part of the plan. Let your body rebuild — come back stronger tomorrow.</div></div>";
-return;
-}
-var key=today+"_"+new Date().toDateString();
-el.innerHTML="<div class='workout-block'>"
-+"<div class='wb-header'><div class='wb-icon'>"+w.emoji+"</div><div><div class='wb-title'>"+w.type+" Day</div><div class='wb-sub'>"+w.muscle+"</div></div></div>"
-+w.exercises.map(function(e,i){
-var ekey=key+"_"+i;var done=!!exDone[ekey];
-return"<div class='exercise-item'>"
-+"<div class='ex-check "+(done?"done":"")+"' onclick='toggleEx(\""+ekey+"\")' ></div>"
-+"<div class='ex-name "+(done?"done":"")+"'>"+e.n+"</div>"
-+"<div class='ex-sets'>"+e.s+"</div>"
-+"</div>";
-}).join("")
-+"</div>";
-}
-
-function toggleEx(key){
-if(exDone[key])delete exDone[key];else exDone[key]=true;
-localStorage.setItem("hg_exercises",JSON.stringify(exDone));
-buildWorkoutContent();
-}
-
-function buildBible(){
-var now=new Date();
-var start=new Date(now.getFullYear(),0,1);
-var day=Math.floor((now-start)/(1000*60*60*24))+1;
-document.getElementById("bibleDay").textContent="Day "+day;
-var pct=((day/365)*100).toFixed(1);
-document.getElementById("bibleFill").style.width=pct+"%";
-document.getElementById("biblePct").textContent=pct+"% complete · "+(365-day)+" days remaining";
-var chapters=[44,45,46];
-var checks=document.getElementById("chapterChecks");
-checks.innerHTML=chapters.map(function(c){
-var key="bible_"+dateKey(now)+"_"+c;var read=!!bibleRead[key];
-return"<button class='ch-btn "+(read?"read":"")+"' onclick='toggleChapter("+c+")'>"+(read?"✓":c)+"</button>";
-}).join("");
-}
-
-function toggleChapter(c){
-var key="bible_"+dateKey(new Date())+"_"+c;
-if(bibleRead[key])delete bibleRead[key];else bibleRead[key]=true;
-localStorage.setItem("hg_bible",JSON.stringify(bibleRead));
-buildBible();
-var done=Object.keys(bibleRead).filter(function(k){return k.startsWith("bible_"+dateKey(new Date()));}).length;
-document.getElementById("statBible").textContent=done>0?"✓":"📖";
-}
-
-function buildSchedule(){
-var now=new Date();var today=now.getDay();
-var daysEl=document.getElementById("weekCalDays");
-var monday=new Date(now);monday.setDate(now.getDate()-(today===0?6:today-1));
-var html="";
-for(var i=0;i<7;i++){
-var d=new Date(monday);d.setDate(monday.getDate()+i);
-var isToday=d.toDateString()===now.toDateString();
-var dayEvents=events.filter(function(e){return e.date===dateKey(d);});
-html+="<div class='wc-day'>"
-+"<div class='wc-dlabel'>"+DAY_NAMES[d.getDay()]+"</div>"
-+"<div class='wc-dnum "+(isToday?"today":"")+" "+(dayEvents.length?"has-event":"")+"'>"+d.getDate()+"</div>"
-+"</div>";
-}
-daysEl.innerHTML=html;
-var todayEvents=events.filter(function(e){return e.date===dateKey(now);});
-var evList=document.getElementById("eventsList");
-if(todayEvents.length===0){
-evList.innerHTML="<div style='color:var(--muted);font-size:14px;padding:10px 0;'>No events today.</div>";
-}else{
-todayEvents.sort(function(a,b){return a.time.localeCompare(b.time);});
-evList.innerHTML=todayEvents.map(function(ev){
-var t=ev.time.split(":");var h=parseInt(t[0]);var m=t[1];
-var ampm=h>=12?"PM":"AM";var h12=h%12||12;
-return"<div class='event-card'>"
-+"<div class='ev-time-col'><div class='ev-time'>"+h12+":"+m+"</div><div class='ev-ampm'>"+ampm+"</div></div>"
-+"<div class='ev-line'></div>"
-+"<div class='ev-body'><div class='ev-title'>"+ev.title+"</div></div>"
-+"</div>";
-}).join("");
-}
-}
-
-function toggleEventForm(){document.getElementById("eventForm").classList.toggle("show");}
-function saveEvent(){
-var title=document.getElementById("evTitle").value.trim();
-var time=document.getElementById("evTime").value;
-if(!title)return;
-events.push({title:title,time:time||"00:00",date:dateKey(new Date())});
-localStorage.setItem("hg_events",JSON.stringify(events));
-document.getElementById("evTitle").value="";
-document.getElementById("evTime").value="";
-toggleEventForm();buildSchedule();
-}
-
-function toggleRecording(){
-if(!("webkitSpeechRecognition" in window||"SpeechRecognition" in window)){
-document.getElementById("transcriptBox").placeholder="Speech not supported on this browser. Please type your entry.";return;
-}
-if(isRecording){
-recognition.stop();return;
-}
-var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-recognition=new SR();
-recognition.continuous=true;recognition.interimResults=true;recognition.lang="en-US";
-var finalT="";
-recognition.onstart=function(){
-isRecording=true;
-document.getElementById("micBtn").classList.add("recording");
-document.getElementById("recordStatus").textContent="Listening...";
-document.getElementById("recordStatus").classList.add("live");
-};
-recognition.onresult=function(e){
-var interim="";
-for(var i=e.resultIndex;i<e.results.length;i++){
-if(e.results[i].isFinal)finalT+=e.results[i][0].transcript+" ";
-else interim+=e.results[i][0].transcript;
-}
-document.getElementById("transcriptBox").value=finalT+interim;
-};
-recognition.onend=function(){
-isRecording=false;
-document.getElementById("micBtn").classList.remove("recording");
-document.getElementById("recordStatus").textContent="Done. Edit or tap Get Guidance.";
-document.getElementById("recordStatus").classList.remove("live");
-};
-recognition.start();
-}
-
-async function submitJournal(){
-var text=document.getElementById("transcriptBox").value.trim();
-if(!text){document.getElementById("apiError").textContent="Please share something first.";document.getElementById("apiError").classList.add("show");return;}
-if(!apiKey){document.getElementById("apiError").textContent="Add your Anthropic API key in Settings ⚙️ to get AI guidance.";document.getElementById("apiError").classList.add("show");return;}
-document.getElementById("apiError").classList.remove("show");
-document.getElementById("submitBtn").disabled=true;
-var ar=document.getElementById("aiResponse");ar.classList.add("show");
-document.getElementById("loadingState").style.display="block";
-document.getElementById("responseContent").style.display="none";
-try{
-var res=await fetch("https://api.anthropic.com/v1/messages",{
-method:"POST",
-headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
-body:JSON.stringify({
-model:"claude-sonnet-4-6",max_tokens:1500,
-system:"You are a wise, Spirit-filled guide who listens deeply and responds with biblical truth, compassion, and practical direction. The user is Jeff — a faith-driven man of God, father, entrepreneur, and landscaper who wakes at 4 AM to pray, run, and seek God. Speak to him directly, personally, and powerfully. Structure your response with: 1) A personal word of encouragement (2-3 sentences), 2) A specific action step or prayer focus for today, 3) Two or three Bible verses that speak directly to what he shared (with brief explanation of why each one applies), 4) A closing encouragement. Be real, direct, and Spirit-led — not generic.",
-messages:[{role:"user",content:text}]
-})
+// Nav button clicks
+['home','jobs','tasks','journal','more'].forEach(function(tab) {
+  var btn = document.getElementById('nb-' + tab);
+  if (!btn) return;
+  btn.addEventListener('click', function(e) { e.preventDefault(); goTo(tab); });
+  btn.addEventListener('touchend', function(e) { e.preventDefault(); goTo(tab); });
 });
-var data=await res.json();
-if(data.error){throw new Error(data.error.message);}
-var reply=data.content[0].text;
-document.getElementById("loadingState").style.display="none";
-document.getElementById("responseContent").style.display="block";
-document.getElementById("responseContent").innerHTML=formatResponse(reply);
-}catch(err){
-document.getElementById("loadingState").style.display="none";
-document.getElementById("apiError").textContent="Error: "+err.message;
-document.getElementById("apiError").classList.add("show");
-ar.classList.remove("show");
-}
-document.getElementById("submitBtn").disabled=false;
-}
 
-function formatResponse(text){
-var sections=text.split(/
-
-+/);
-var html="";
-sections.forEach(function(s){
-s=s.trim();if(!s)return;
-if(s.match(/^#+\s/)){html+="<div class='res-block'><div class='res-chip'>"+s.replace(/^#+\s/,"")+"</div></div>";}
-else if(s.match(/^\d+\)/)){
-var lines=s.split("
-");
-html+="<div class='res-block'>";
-lines.forEach(function(l){
-if(l.match(/^\d+\)/)){
-var parts=l.replace(/^\d+\)\s*/,"").split(":");
-html+="<div class='step-row'><div class='step-badge'>"+(l.match(/^\d+/)[0])+"</div><div class='step-body'><div class='step-title'>"+(parts[0]||"")+"</div>"+(parts.slice(1).join(":")?("<div class='step-detail'>"+parts.slice(1).join(":").trim()+"</div>"):"")+"</div></div>";
-}
+// More sub-screens
+['workout','diet','bible','habits'].forEach(function(sub) {
+  var btn = document.getElementById('goto-' + sub);
+  if (!btn) return;
+  btn.addEventListener('click', function() { goTo(sub); });
+  btn.addEventListener('touchend', function(e) { e.preventDefault(); goTo(sub); });
 });
-html+="</div>";
-}
-else if(s.match(/^("|"|")/)){html+="<div class='focus-block'><div class='focus-eyebrow'>A Word for You</div><div class='focus-txt'>"+s+"</div></div>";}
-else{html+="<div class='res-block'><div class='res-body'>"+s.replace(/
-/g,"<br>")+"</div></div>";}
+
+// Back buttons
+['workout','diet','bible','habits'].forEach(function(sub) {
+  var btn = document.getElementById('backFrom' + sub.charAt(0).toUpperCase() + sub.slice(1));
+  if (!btn) return;
+  btn.addEventListener('click', function() { goTo('more'); });
 });
-return html;
+
+// Settings
+document.getElementById('settingsBtn').addEventListener('click', function() {
+  document.getElementById('settingsModal').classList.add('show');
+  if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+  applyTheme(localStorage.getItem('hg_theme') || 'dark');
+});
+document.getElementById('cancelSettings').addEventListener('click', function() {
+  document.getElementById('settingsModal').classList.remove('show');
+});
+document.getElementById('saveSettings').addEventListener('click', function() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('hg_apikey', apiKey);
+  document.getElementById('settingsModal').classList.remove('show');
+});
+document.getElementById('themeToggle').addEventListener('click', function() {
+  var cur = localStorage.getItem('hg_theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+// Journal CTA
+document.getElementById('journalCta').addEventListener('click', function() { goTo('journal'); });
+
+// ── Tasks ──
+function dateKey(d) { return d.toISOString().slice(0,10); }
+
+function renderTasks() {
+  var list = document.getElementById('taskList');
+  var home = document.getElementById('homeTaskList');
+  var rem = tasks.filter(function(t){ return !t.done; });
+  document.getElementById('statTasks').textContent = rem.length;
+  list.innerHTML = tasks.length ? tasks.map(function(t,i) {
+    return '<div class="task-item"><div class="task-check ' + (t.done?'done':'') + '" data-i="' + i + '"></div><span class="task-text ' + (t.done?'done':'') + '">' + t.text + '</span></div>';
+  }).join('') : '<div style="color:var(--muted);font-size:14px;padding:10px 0;">No tasks yet.</div>';
+  home.innerHTML = rem.length ? rem.slice(0,3).map(function(t){
+    return '<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;display:inline-block;"></span>' + t.text + '</div>';
+  }).join('') : '<div style="color:var(--muted);font-size:14px;">All done! 🎉</div>';
+  // re-attach clicks
+  document.querySelectorAll('.task-check').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var i = parseInt(this.getAttribute('data-i'));
+      tasks[i].done = !tasks[i].done;
+      localStorage.setItem('hg_tasks', JSON.stringify(tasks));
+      renderTasks();
+    });
+  });
 }
 
-window.onload=init;
+document.getElementById('addTaskBtn').addEventListener('click', function() {
+  var inp = document.getElementById('taskInput');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  tasks.push({text:txt, done:false});
+  localStorage.setItem('hg_tasks', JSON.stringify(tasks));
+  inp.value = '';
+  renderTasks();
+});
+document.getElementById('taskInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('addTaskBtn').click();
+});
+
+// ── Habits ──
+function buildHabits() {
+  var today = dateKey(new Date());
+  var done = HABITS.filter(function(h){ return habitLog[today+'_'+h.id]; }).length;
+  document.getElementById('habitCount').textContent = done + ' / ' + HABITS.length;
+  document.getElementById('habitBar').style.width = Math.round(done/HABITS.length*100) + '%';
+  document.getElementById('habitList').innerHTML = HABITS.map(function(h) {
+    var checked = !!habitLog[today+'_'+h.id];
+    return '<div style="background:var(--s2);border:1px solid ' + (checked?'rgba(74,222,128,.25)':'var(--border)') + ';border-radius:18px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;" id="hcard-'+h.id+'">'
+      + '<div style="font-size:24px;">' + h.emoji + '</div>'
+      + '<div style="flex:1;font-size:15px;font-weight:700;">' + h.name + '</div>'
+      + '<div style="width:28px;height:28px;border-radius:50%;border:2px solid ' + (checked?'var(--g2)':'var(--muted2)') + ';background:' + (checked?'var(--g2)':'transparent') + ';display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:#000;" data-hid="'+h.id+'">' + (checked?'✓':'') + '</div>'
+      + '</div>';
+  }).join('');
+  document.querySelectorAll('[data-hid]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var id = this.getAttribute('data-hid');
+      var key = dateKey(new Date()) + '_' + id;
+      if (habitLog[key]) delete habitLog[key]; else habitLog[key] = true;
+      localStorage.setItem('hg_habits', JSON.stringify(habitLog));
+      buildHabits();
+    });
+  });
+}
+
+// ── Workout ──
+function buildWorkout() {
+  var day = new Date().getDay();
+  var w = WORKOUT[day];
+  if (!w || w.type === 'rest') {
+    document.getElementById('workoutEmoji').textContent = '😴';
+    document.getElementById('workoutTitle').textContent = 'Rest Day';
+    document.getElementById('workoutSub').textContent = 'Recovery is part of the plan.';
+    document.getElementById('exerciseList').innerHTML = '';
+    return;
+  }
+  document.getElementById('workoutEmoji').textContent = w.emoji;
+  document.getElementById('workoutTitle').textContent = w.label;
+  document.getElementById('workoutSub').textContent = w.sub;
+  var key = day + '_' + new Date().toDateString();
+  document.getElementById('exerciseList').innerHTML = '<div class="sec-label">Exercises</div>' + w.ex.map(function(e,i) {
+    var ekey = key + '_' + i;
+    var done = !!exDone[ekey];
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">'
+      + '<div style="width:22px;height:22px;border-radius:6px;border:2px solid ' + (done?'var(--g2)':'var(--muted2)') + ';background:' + (done?'var(--g2)':'transparent') + ';display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#000;" data-ekey="'+ekey+'">' + (done?'✓':'') + '</div>'
+      + '<div style="flex:1;font-size:14px;' + (done?'text-decoration:line-through;color:var(--muted)':'') + '">' + e + '</div>'
+      + '</div>';
+  }).join('');
+  document.querySelectorAll('[data-ekey]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var k = this.getAttribute('data-ekey');
+      if (exDone[k]) delete exDone[k]; else exDone[k] = true;
+      localStorage.setItem('hg_ex', JSON.stringify(exDone));
+      buildWorkout();
+    });
+  });
+}
+
+// ── Bible ──
+function buildBible() {
+  var now = new Date();
+  var day = Math.floor((now - new Date(now.getFullYear(),0,1)) / 86400000) + 1;
+  document.getElementById('bibleDay').textContent = 'Day ' + day;
+  var pct = (day/365*100).toFixed(1);
+  document.getElementById('bibleFill').style.width = pct + '%';
+  document.getElementById('biblePct').textContent = pct + '% complete';
+  var chapters = [44,45,46];
+  document.getElementById('chapterChecks').innerHTML = chapters.map(function(c) {
+    var key = 'bible_' + dateKey(now) + '_' + c;
+    var read = !!bibleRead[key];
+    return '<div style="width:44px;height:44px;border-radius:12px;border:1px solid ' + (read?'var(--g2)':'var(--border2)') + ';background:' + (read?'var(--g2)':'var(--s3)') + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;color:' + (read?'#000':'var(--text)') + ';" data-ch="'+c+'">' + (read?'✓':c) + '</div>';
+  }).join('');
+  document.querySelectorAll('[data-ch]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var c = this.getAttribute('data-ch');
+      var key = 'bible_' + dateKey(new Date()) + '_' + c;
+      if (bibleRead[key]) delete bibleRead[key]; else bibleRead[key] = true;
+      localStorage.setItem('hg_bible', JSON.stringify(bibleRead));
+      buildBible();
+    });
+  });
+}
+
+// ── Journal / Mic ──
+document.getElementById('micBtn').addEventListener('click', function() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    document.getElementById('recordStatus').textContent = 'Speech not supported — please type.';
+    return;
+  }
+  if (isRecording) { recognition.stop(); return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+  var finalT = '';
+  recognition.onstart = function() { isRecording = true; document.getElementById('micBtn').classList.add('recording'); document.getElementById('recordStatus').textContent = 'Listening...'; };
+  recognition.onresult = function(e) {
+    var interim = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalT += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('transcriptBox').value = finalT + interim;
+  };
+  recognition.onend = function() { isRecording = false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('recordStatus').textContent = 'Done. Tap Get Guidance.'; };
+  recognition.start();
+});
+
+document.getElementById('submitBtn').addEventListener('click', async function() {
+  var text = document.getElementById('transcriptBox').value.trim();
+  var errEl = document.getElementById('apiError');
+  if (!text) { errEl.textContent = 'Please share something first.'; errEl.classList.add('show'); return; }
+  if (!apiKey) { errEl.textContent = 'Add your API key in Settings ⚙️'; errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  this.disabled = true;
+  var ar = document.getElementById('aiResponse'); ar.classList.add('show');
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('responseContent').innerHTML = '';
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,
+        system:'You are a wise, Spirit-filled guide. The user is Jeff — a faith-driven father, entrepreneur, and landscaper who wakes at 4 AM to pray and seek God. Speak directly and personally with biblical truth and compassion. Give: 1) Personal encouragement, 2) A specific action or prayer focus, 3) Two Bible verses that apply, 4) A closing word.',
+        messages:[{role:'user',content:text}]})
+    });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('responseContent').innerHTML = '<div class="res-block">' + data.content[0].text.replace(/\n\n/g,'</div><div class="res-block">').replace(/\n/g,'<br>') + '</div>';
+  } catch(err) {
+    document.getElementById('loadingState').style.display = 'none';
+    errEl.textContent = 'Error: ' + err.message; errEl.classList.add('show'); ar.classList.remove('show');
+  }
+  this.disabled = false;
+});
+
+// ── Init ──
+function init() {
+  var now = new Date();
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('headerDate').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+  var h = now.getHours();
+  document.getElementById('greeting').textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', Jeff ✦';
+  renderTasks();
+}
+
+init();
 </script>
-</body></html>
+</body>
+</html>
