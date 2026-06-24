@@ -379,15 +379,9 @@ function goTo(tab) {
 // Settings
 document.getElementById('settingsBtn').addEventListener('click', function() {
   document.getElementById('settingsModal').classList.add('show');
-  if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
   applyTheme(localStorage.getItem('hg_theme') || 'dark');
 });
 document.getElementById('cancelSettings').addEventListener('click', function() {
-  document.getElementById('settingsModal').classList.remove('show');
-});
-document.getElementById('saveSettings').addEventListener('click', function() {
-  apiKey = document.getElementById('apiKeyInput').value.trim();
-  localStorage.setItem('hg_apikey', apiKey);
   document.getElementById('settingsModal').classList.remove('show');
 });
 document.getElementById('themeToggle').addEventListener('click', function() {
