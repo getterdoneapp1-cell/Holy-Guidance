@@ -547,7 +547,6 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
   var text = document.getElementById('transcriptBox').value.trim();
   var errEl = document.getElementById('apiError');
   if (!text) { errEl.textContent = 'Please share something first.'; errEl.classList.add('show'); return; }
-  if (!apiKey) { errEl.textContent = 'Add your API key in Settings ⚙️'; errEl.classList.add('show'); return; }
   errEl.classList.remove('show');
   this.disabled = true;
   var ar = document.getElementById('aiResponse'); ar.classList.add('show');
