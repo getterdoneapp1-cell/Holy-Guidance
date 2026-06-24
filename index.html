@@ -523,11 +523,10 @@ function startRecording() {
   }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   recognition.onstart = function() {
-    isRecording = true;
     document.getElementById('micBtn').classList.add('recording');
     document.getElementById('recordStatus').textContent = 'Listening... tap to stop';
   };
@@ -540,15 +539,23 @@ function startRecording() {
     document.getElementById('transcriptBox').value = finalTranscript + interim;
   };
   recognition.onerror = function(e) {
-    document.getElementById('recordStatus').textContent = e.error === 'not-allowed' ? 'Mic access denied — check browser settings.' : 'Error: ' + e.error;
-    isRecording = false;
-    document.getElementById('micBtn').classList.remove('recording');
+    if (e.error === 'not-allowed') {
+      document.getElementById('recordStatus').textContent = 'Mic access denied — check browser settings.';
+      isRecording = false;
+      document.getElementById('micBtn').classList.remove('recording');
+    }
+    // ignore 'no-speech' and other transient errors — onend will restart
   };
   recognition.onend = function() {
-    isRecording = false;
-    document.getElementById('micBtn').classList.remove('recording');
-    document.getElementById('recordStatus').textContent = finalTranscript ? 'Got it — tap mic to add more, or tap Get Guidance.' : 'Tap mic to speak.';
+    // auto-restart if user hasn't tapped stop
+    if (isRecording) {
+      try { recognition.start(); } catch(e) {}
+    } else {
+      document.getElementById('micBtn').classList.remove('recording');
+      document.getElementById('recordStatus').textContent = finalTranscript ? 'Got it — tap Get Guidance.' : 'Tap mic to speak.';
+    }
   };
+  isRecording = true;
   recognition.start();
 }
 
