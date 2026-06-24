@@ -586,12 +586,39 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     var data = await res.json();
     if (data.error) throw new Error(data.error);
     document.getElementById('loadingState').style.display = 'none';
-    var paragraphs = data.reply.trim().split(/\n\n+/);
-    var html = '<div class="res-block" style="line-height:1.8;font-size:15px;">';
-    paragraphs.forEach(function(p) {
-      html += '<p style="margin-bottom:14px;color:var(--text);">' + p.replace(/\n/g, '<br>') + '</p>';
-    });
-    html += '</div>';
+    var html = '';
+    if (data.focus) {
+      html += '<div style="background:var(--g-dim);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:22px;margin-bottom:12px;text-align:center;">'
+        + '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--g);opacity:.7;margin-bottom:10px;">Your Word for Today</div>'
+        + '<div style="font-size:18px;font-weight:700;line-height:1.5;color:var(--text);">' + data.focus + '</div>'
+        + '</div>';
+    }
+    if (data.steps && data.steps.length) {
+      html += '<div style="background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;">'
+        + '<div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;"><span style="display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;"></span>Action Steps</div>';
+      data.steps.forEach(function(s, i) {
+        html += '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">'
+          + '<div style="width:30px;height:30px;border-radius:9px;background:var(--g-dim);border:1px solid rgba(74,222,128,.2);color:var(--g);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (i+1) + '</div>'
+          + '<div><div style="font-size:15px;font-weight:700;margin-bottom:3px;">' + s.title + '</div><div style="font-size:13px;color:var(--muted);line-height:1.55;">' + s.detail + '</div></div>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+    if (data.verses && data.verses.length) {
+      html += '<div style="background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;">'
+        + '<div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;"><span style="display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;"></span>Scripture for You</div>';
+      data.verses.forEach(function(v) {
+        html += '<div style="padding:12px 0;border-bottom:1px solid var(--border);">'
+          + '<div style="display:inline-block;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:var(--g);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:800;margin-bottom:7px;">' + v.ref + '</div>'
+          + '<div style="font-size:14px;font-style:italic;color:rgba(232,245,236,.65);margin-bottom:6px;line-height:1.55;">"' + v.quote + '"</div>'
+          + '<div style="font-size:13px;color:var(--text);line-height:1.5;">' + v.connection + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+    if (data.encouragement) {
+      html += '<div style="background:rgba(252,211,77,.05);border:1px solid rgba(252,211,77,.15);border-radius:20px;padding:20px;margin-bottom:12px;text-align:center;font-size:15px;color:rgba(252,211,77,.9);line-height:1.7;font-style:italic;">' + data.encouragement + '</div>';
+    }
     html += '<button class="reset-btn" onclick="resetJournal()">Start a New Entry</button>';
     document.getElementById('responseContent').innerHTML = html;
   } catch(err) {

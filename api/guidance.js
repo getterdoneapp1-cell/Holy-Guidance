@@ -11,18 +11,25 @@ export default async function handler(req, res) {
 
   const prompt = `You are a wise, Spirit-filled guide speaking directly to Jeff — a faith-driven man, father, entrepreneur, and landscaper who wakes at 4 AM to pray and seek God. Jeff has shared what's on his heart below.
 
-Respond the way a trusted pastor or mentor would — personal, warm, direct, and rooted in Scripture. Speak to Jeff specifically, not generically. Your response should feel like a real conversation, not a template.
-
-Include:
-- Personal encouragement that speaks to exactly what Jeff shared
-- A specific action or prayer focus for today
-- Two or three Bible verses that directly apply, quoted in full
-- A closing word that sends him forward with faith
+Speak personally, warmly, and directly — like a trusted pastor who knows Jeff well. Be specific to what he shared, not generic.
 
 Jeff's journal entry:
 "${text}"
 
-Write in plain flowing paragraphs. No bullet points, no headers, no JSON. Just speak to him.`;
+Respond in this exact JSON structure:
+{
+  "focus": "One powerful sentence — the core truth Jeff needs to hear today, spoken directly to him",
+  "steps": [
+    {"title": "Step title", "detail": "2-3 sentences of personal, faith-rooted guidance for Jeff specifically"},
+    {"title": "Step title", "detail": "2-3 sentences"},
+    {"title": "Step title", "detail": "2-3 sentences"}
+  ],
+  "verses": [
+    {"ref": "Book Chapter:Verse", "quote": "The full verse text", "connection": "1-2 sentences on exactly why this verse speaks to what Jeff shared"},
+    {"ref": "Book Chapter:Verse", "quote": "The full verse text", "connection": "1-2 sentences"}
+  ],
+  "encouragement": "A personal, heartfelt closing word for Jeff — 2-3 sentences that send him forward with faith"
+}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -45,8 +52,9 @@ Write in plain flowing paragraphs. No bullet points, no headers, no JSON. Just s
     }
 
     const data = await response.json();
-    const reply = data.content[0].text;
-    res.status(200).json({ reply });
+    const raw = data.content[0].text;
+    const json = JSON.parse(raw.match(/\{[\s\S]*\}/)[0]);
+    res.status(200).json(json);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
