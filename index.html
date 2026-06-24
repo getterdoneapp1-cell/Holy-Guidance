@@ -290,11 +290,9 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
       </div>
       <div class="theme-toggle" id="themeToggle"><div class="theme-knob" id="themeKnob">🌙</div></div>
     </div>
-    <div class="modal-desc">Enter your Anthropic API key to power the AI Journal.</div>
-    <input class="modal-input" type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <div class="modal-desc">Your API key is stored securely on the server.</div>
     <div class="modal-btns">
-      <button class="btn-cancel" id="cancelSettings">Cancel</button>
-      <button class="btn-save" id="saveSettings">Save Key</button>
+      <button class="btn-cancel" id="cancelSettings">Close</button>
     </div>
   </div>
 </div>
@@ -556,17 +554,15 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
   document.getElementById('loadingState').style.display = 'block';
   document.getElementById('responseContent').innerHTML = '';
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
+    var res = await fetch('/api/guidance', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-      body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,
-        system:'You are a wise, Spirit-filled guide. The user is Jeff — a faith-driven father, entrepreneur, and landscaper who wakes at 4 AM to pray and seek God. Speak directly and personally with biblical truth and compassion. Give: 1) Personal encouragement, 2) A specific action or prayer focus, 3) Two Bible verses that apply, 4) A closing word.',
-        messages:[{role:'user',content:text}]})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text: text})
     });
     var data = await res.json();
-    if (data.error) throw new Error(data.error.message);
+    if (data.error) throw new Error(data.error);
     document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('responseContent').innerHTML = '<div class="res-block">' + data.content[0].text.replace(/\n\n/g,'</div><div class="res-block">').replace(/\n/g,'<br>') + '</div>';
+    document.getElementById('responseContent').innerHTML = '<div class="res-block">' + data.reply.replace(/\n\n/g,'</div><div class="res-block">').replace(/\n/g,'<br>') + '</div>';
   } catch(err) {
     document.getElementById('loadingState').style.display = 'none';
     errEl.textContent = 'Error: ' + err.message; errEl.classList.add('show'); ar.classList.remove('show');
