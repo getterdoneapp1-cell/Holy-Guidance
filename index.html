@@ -305,14 +305,40 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
   <div id="jobsList"><div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">Loading jobs...</div></div>
 </div>
 
-<!-- TASKS -->
+<!-- MY DAY -->
 <div class="screen" id="screen-tasks">
-  <div class="card">
-    <div class="sec-label">Today's Tasks</div>
-    <div id="taskList"><div style="color:var(--muted);font-size:14px;padding:4px 0;">No tasks yet.</div></div>
-    <div class="add-row">
-      <input class="add-input" type="text" id="taskInput" placeholder="Add a task...">
-      <button class="add-btn" id="addTaskBtn">+</button>
+
+  <!-- Jobs section -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:10px;height:10px;border-radius:3px;background:#fb923c;flex-shrink:0;"></div>
+      <span class="sec-label" style="margin:0;">JOBS TODAY</span>
+    </div>
+    <button onclick="loadJobs()" style="font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:700;touch-action:manipulation;">↻</button>
+  </div>
+  <div id="mydayJobsList" style="margin-bottom:20px;"><div style="color:var(--muted);font-size:14px;padding:8px 0;">Loading jobs...</div></div>
+
+  <!-- Habits section -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <div style="width:10px;height:10px;border-radius:3px;background:#a78bfa;flex-shrink:0;"></div>
+    <span class="sec-label" style="margin:0;">HABITS</span>
+  </div>
+  <div id="mydayHabits" style="background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:4px 16px;margin-bottom:20px;"></div>
+
+  <!-- Reminders & Tasks section -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <div style="width:10px;height:10px;border-radius:3px;background:#60a5fa;flex-shrink:0;"></div>
+    <span class="sec-label" style="margin:0;">REMINDERS & TASKS</span>
+  </div>
+  <div style="background:var(--s2);border:1px solid var(--border);border-radius:18px;padding:4px 16px 14px;">
+    <div id="taskList"><div style="color:var(--muted);font-size:14px;padding:12px 0;">No reminders yet.</div></div>
+    <div style="margin-top:10px;">
+      <input class="add-input" type="text" id="taskInput" placeholder="Add reminder or task..." style="width:100%;margin-bottom:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="time" id="taskTime" style="background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;font-size:14px;color:var(--text);outline:none;flex:1;">
+        <button class="add-btn" id="addTaskBtn" style="border-radius:10px;font-size:16px;padding:9px 16px;">+</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Set a time to get a push notification reminder</div>
     </div>
   </div>
 </div>
@@ -446,7 +472,7 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 <nav>
   <button class="nb active" id="nb-home"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</button>
   <button class="nb" id="nb-jobs"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 6 5 10c0 6 7 12 7 12s7-6 7-12c0-4-3-8-7-8z"/><circle cx="12" cy="10" r="2.5"/></svg>Jobs</button>
-  <button class="nb" id="nb-tasks"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks</button>
+  <button class="nb" id="nb-tasks"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>My Day</button>
   <button class="nb" id="nb-journal"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Journal</button>
   <button class="nb" id="nb-more"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>More</button>
 </nav>
@@ -653,8 +679,9 @@ function goTo(tab) {
   var b = document.getElementById('nb-' + tab);
   if (s) s.classList.add('active');
   if (b) b.classList.add('active');
-  var titles = {home:'Home',jobs:"Today's Jobs",tasks:'Tasks',journal:'Journal',more:'More',workout:'Workout Plan',diet:'Diet & Nutrition',bible:'Bible Plan',habits:'Habit Tracker',schedule:'My Schedule'};
+  var titles = {home:'Home',jobs:"Today's Jobs",tasks:'My Day',journal:'Journal',more:'More',workout:'Workout Plan',diet:'Diet & Nutrition',bible:'Bible Plan',habits:'Habit Tracker',schedule:'My Schedule'};
   document.getElementById('headerTitle').textContent = titles[tab] || tab;
+  if (tab === 'tasks') { renderMydayJobs(); renderMydayHabits(); renderTasks(); }
   if (tab === 'habits') buildHabits();
   if (tab === 'bible') buildBible();
   if (tab === 'workout') { buildWorkoutStrip(); buildWorkout(); }
@@ -725,10 +752,18 @@ function initHomeScreen() {
 // ── Tasks ──
 function renderTasks() {
   var list = document.getElementById('taskList');
-  if (!tasks.length) { list.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:4px 0;">No tasks yet.</div>'; }
-  else {
-    list.innerHTML = tasks.map(function(t) {
-      return '<div class="task-item"><div class="task-check ' + (t.done?'done':'') + '" data-id="' + t.id + '"></div><span class="task-text ' + (t.done?'done':'') + '">' + t.text + '</span></div>';
+  var active = tasks.filter(function(t){ return !t.done; });
+  var done = tasks.filter(function(t){ return t.done; });
+  var all = active.concat(done);
+  if (!all.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:12px 0;">No reminders yet.</div>';
+  } else {
+    list.innerHTML = all.map(function(t) {
+      var timeLabel = t.remind_at ? '<span style="font-size:11px;font-weight:700;color:var(--blue);margin-left:6px;">⏰ ' + fmtTime(t.remind_at) + '</span>' : '';
+      return '<div class="task-item">'
+        + '<div class="task-check ' + (t.done?'done':'') + '" data-id="' + t.id + '"></div>'
+        + '<span class="task-text ' + (t.done?'done':'') + '">' + t.text + timeLabel + '</span>'
+        + '</div>';
     }).join('');
     list.querySelectorAll('.task-check').forEach(function(el) {
       el.addEventListener('click', function() { toggleTask(this.getAttribute('data-id')); });
@@ -738,8 +773,37 @@ function renderTasks() {
   document.getElementById('statTasks').textContent = rem.length;
   var hl = document.getElementById('homeTaskList');
   hl.innerHTML = rem.length
-    ? rem.slice(0,3).map(function(t){ return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;display:inline-block;"></span>' + t.text + '</div>'; }).join('')
+    ? rem.slice(0,3).map(function(t){
+        var dot = t.remind_at ? '🔵' : '🟢';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;">'
+          + '<span>' + dot + '</span><span>' + t.text + (t.remind_at ? ' · ' + fmtTime(t.remind_at) : '') + '</span></div>';
+      }).join('')
     : '<div style="color:var(--muted);font-size:14px;">All done! 🎉</div>';
+  renderMydayHabits();
+}
+
+function renderMydayHabits() {
+  var el = document.getElementById('mydayHabits');
+  if (!el) return;
+  el.innerHTML = HABITS.map(function(h) {
+    var checked = !!habitLog[h.id];
+    return '<div class="task-item" style="padding:11px 0;">'
+      + '<div class="habit-check ' + (checked?'checked':'') + '" data-hid="' + h.id + '" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;font-size:13px;flex-shrink:0;">' + (checked?'✓':'') + '</div>'
+      + '<span class="task-text ' + (checked?'done':'') + '" style="display:flex;align-items:center;gap:8px;">'
+      + h.emoji + ' ' + h.name
+      + '</span></div>';
+  }).join('');
+  el.querySelectorAll('.habit-check').forEach(function(el) {
+    el.addEventListener('click', function() { toggleHabit(this.getAttribute('data-hid')); });
+  });
+}
+
+function renderMydayJobs() {
+  var el = document.getElementById('mydayJobsList');
+  if (!el) return;
+  // reuse the jobs data already loaded
+  var jl = document.getElementById('jobsList');
+  if (jl) el.innerHTML = jl.innerHTML;
 }
 
 async function toggleTask(id) {
@@ -755,11 +819,14 @@ document.getElementById('taskInput').addEventListener('keydown', function(e){ if
 
 async function addTask() {
   var inp = document.getElementById('taskInput');
+  var timeInp = document.getElementById('taskTime');
   var txt = inp.value.trim();
   if (!txt) return;
-  var result = await sb.from('tasks').insert({user_id: currentUser.id, text: txt, done: false}).select().single();
+  var remindAt = timeInp ? timeInp.value : null;
+  var result = await sb.from('tasks').insert({user_id: currentUser.id, text: txt, done: false, remind_at: remindAt || null}).select().single();
   if (!result.error) { tasks.push(result.data); renderTasks(); }
   inp.value = '';
+  if (timeInp) timeInp.value = '';
 }
 
 // ── Habits ──
