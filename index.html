@@ -296,13 +296,25 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
   </div>
 </div>
 
-<!-- JOBS -->
+<!-- AHEAD -->
 <div class="screen" id="screen-jobs">
-  <div class="sec-label" style="display:flex;justify-content:space-between;align-items:center;">
-    <span>Today's Jobs</span>
-    <button onclick="loadJobs()" style="font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:700;">↻ Refresh</button>
+  <!-- 7-day strip -->
+  <div id="aheadStrip" style="display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;"></div>
+  <!-- Day cards -->
+  <div id="aheadDays"></div>
+  <!-- Quick-add drawer -->
+  <div id="quickAddDrawer" style="display:none;position:fixed;bottom:calc(var(--nav-h) + 10px);left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;background:var(--s1);border:1px solid var(--border2);border-radius:20px;padding:16px;z-index:999;box-shadow:0 -4px 30px rgba(0,0,0,.4);">
+    <div style="font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;" id="quickAddLabel">Add to Today</div>
+    <input class="add-input" type="text" id="qaText" placeholder="What do you need to do?" style="width:100%;margin-bottom:8px;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="time" id="qaTime" style="flex:1;background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);outline:none;">
+      <input type="date" id="qaDate" style="flex:1;background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);outline:none;">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button id="qaSave" style="flex:1;background:var(--g2);color:#000;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;touch-action:manipulation;">Add</button>
+      <button id="qaCancel" style="background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--muted);cursor:pointer;touch-action:manipulation;">✕</button>
+    </div>
   </div>
-  <div id="jobsList"><div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">Loading jobs...</div></div>
 </div>
 
 <!-- MY DAY -->
@@ -471,7 +483,7 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 <!-- NAV -->
 <nav>
   <button class="nb active" id="nb-home"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>Home</button>
-  <button class="nb" id="nb-jobs"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 6 5 10c0 6 7 12 7 12s7-6 7-12c0-4-3-8-7-8z"/><circle cx="12" cy="10" r="2.5"/></svg>Jobs</button>
+  <button class="nb" id="nb-jobs"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Ahead</button>
   <button class="nb" id="nb-tasks"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>My Day</button>
   <button class="nb" id="nb-journal"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Journal</button>
   <button class="nb" id="nb-more"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>More</button>
@@ -679,9 +691,10 @@ function goTo(tab) {
   var b = document.getElementById('nb-' + tab);
   if (s) s.classList.add('active');
   if (b) b.classList.add('active');
-  var titles = {home:'Home',jobs:"Today's Jobs",tasks:'My Day',journal:'Journal',more:'More',workout:'Workout Plan',diet:'Diet & Nutrition',bible:'Bible Plan',habits:'Habit Tracker',schedule:'My Schedule'};
+  var titles = {home:'Home',jobs:'Ahead',tasks:'My Day',journal:'Journal',more:'More',workout:'Workout Plan',diet:'Diet & Nutrition',bible:'Bible Plan',habits:'Habit Tracker',schedule:'My Schedule'};
   document.getElementById('headerTitle').textContent = titles[tab] || tab;
   if (tab === 'tasks') { renderMydayJobs(); renderMydayHabits(); renderTasks(); }
+  if (tab === 'jobs') buildAhead();
   if (tab === 'habits') buildHabits();
   if (tab === 'bible') buildBible();
   if (tab === 'workout') { buildWorkoutStrip(); buildWorkout(); }
@@ -731,6 +744,153 @@ document.getElementById('signOutBtn').addEventListener('click', async function()
   await sb.auth.signOut();
   document.getElementById('settingsModal').classList.remove('show');
 });
+
+// ── Ahead (7-day planner) ──
+var aheadSelectedDate = null;
+
+async function buildAhead() {
+  var strip = document.getElementById('aheadStrip');
+  var daysEl = document.getElementById('aheadDays');
+  strip.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px;">Loading…</div>';
+  daysEl.innerHTML = '';
+
+  // Fetch upcoming jobs
+  var jobs = [];
+  try {
+    var r = await fetch('/api/upcoming');
+    var d = await r.json();
+    if (Array.isArray(d)) jobs = d;
+  } catch(e) {}
+
+  // Fetch tasks with task_date for next 14 days
+  var taskRows = [];
+  if (currentUser) {
+    var today = localDateStr(new Date());
+    var future = localDateStr(new Date(Date.now() + 14 * 86400000));
+    var res = await sb.from('tasks').select('*').eq('user_id', currentUser.id)
+      .gte('task_date', today).lte('task_date', future);
+    if (res.data) taskRows = res.data;
+  }
+
+  // Build 7 days
+  var days = [];
+  for (var i = 0; i < 7; i++) {
+    var d2 = new Date();
+    d2.setDate(d2.getDate() + i);
+    days.push(d2);
+  }
+
+  if (!aheadSelectedDate) aheadSelectedDate = localDateStr(days[0]);
+
+  // Strip
+  strip.innerHTML = days.map(function(d2) {
+    var ds = localDateStr(d2);
+    var isToday = i === 0;
+    var active = ds === aheadSelectedDate;
+    var dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d2.getDay()];
+    var dayNum = d2.getDate();
+    // count items for dot
+    var jobsOnDay = jobs.filter(function(j){ return (j.scheduled_date||'').slice(0,10) === ds; });
+    var tasksOnDay = taskRows.filter(function(t){ return t.task_date === ds; });
+    var hasDot = jobsOnDay.length + tasksOnDay.length > 0;
+    return '<button onclick="selectAheadDay(\'' + ds + '\')" style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 14px;border-radius:14px;border:none;cursor:pointer;font-family:inherit;transition:all .15s;background:' + (active ? 'var(--g2)' : 'var(--s2)') + ';color:' + (active ? '#000' : 'var(--text)') + ';">'
+      + '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">' + dayName + '</span>'
+      + '<span style="font-size:20px;font-weight:900;">' + dayNum + '</span>'
+      + (hasDot ? '<span style="width:6px;height:6px;border-radius:50%;background:' + (active ? '#000' : 'var(--g2)') + ';"></span>' : '<span style="width:6px;height:6px;"></span>')
+      + '</button>';
+  }).join('');
+
+  renderAheadDay(jobs, taskRows, days);
+
+  // Quick-add drawer wiring
+  var drawer = document.getElementById('quickAddDrawer');
+  document.getElementById('qaSave').onclick = async function() {
+    var text = document.getElementById('qaText').value.trim();
+    if (!text || !currentUser) return;
+    var time = document.getElementById('qaTime').value;
+    var date = document.getElementById('qaDate').value || aheadSelectedDate;
+    var obj = { user_id: currentUser.id, text: text, done: false, task_date: date };
+    if (time) obj.remind_at = time;
+    var ins = await sb.from('tasks').insert(obj).select().single();
+    if (ins.data) { taskRows.push(ins.data); renderAheadDay(jobs, taskRows, days); }
+    document.getElementById('qaText').value = '';
+    document.getElementById('qaTime').value = '';
+    drawer.style.display = 'none';
+  };
+  document.getElementById('qaCancel').onclick = function() { drawer.style.display = 'none'; };
+}
+
+function selectAheadDay(ds) {
+  aheadSelectedDate = ds;
+  document.getElementById('quickAddLabel').textContent = 'Add to ' + fmtDateLabel(ds);
+  document.getElementById('qaDate').value = ds;
+  buildAhead();
+}
+
+function renderAheadDay(jobs, taskRows, days) {
+  var daysEl = document.getElementById('aheadDays');
+  var ds = aheadSelectedDate;
+  var d2 = days.find(function(d){ return localDateStr(d) === ds; }) || days[0];
+  var dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d2.getDay()];
+  var dayLabel = ds === localDateStr(new Date()) ? 'Today — ' + dayName : dayName + ', ' + MONTH_NAMES[d2.getMonth()] + ' ' + d2.getDate();
+
+  var jobsOnDay = jobs.filter(function(j){ return (j.scheduled_date||'').slice(0,10) === ds; });
+  var tasksOnDay = taskRows.filter(function(t){ return (t.task_date||'') === ds && !t.done; });
+
+  var html = '<div style="margin-bottom:12px;">'
+    + '<div style="font-size:17px;font-weight:900;margin-bottom:14px;">' + dayLabel + '</div>';
+
+  if (jobsOnDay.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#f97316;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">🟠 Jobs</div>';
+    jobsOnDay.forEach(function(j) {
+      var t = (j.scheduled_date||'').slice(11,16);
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--s2);border-radius:14px;margin-bottom:8px;border-left:3px solid #f97316;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:15px;font-weight:700;">' + (j.customer_name || j.title || 'Job') + '</div>'
+        + (t ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏰ ' + fmtTime(t) + '</div>' : '')
+        + (j.address ? '<div style="font-size:12px;color:var(--muted);">📍 ' + j.address + '</div>' : '')
+        + '</div></div>';
+    });
+  }
+
+  if (tasksOnDay.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#60a5fa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;margin-top:4px;">🔵 Tasks & Reminders</div>';
+    tasksOnDay.forEach(function(t) {
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s2);border-radius:14px;margin-bottom:8px;border-left:3px solid #60a5fa;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:15px;font-weight:600;">' + t.text + '</div>'
+        + (t.remind_at ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏰ ' + fmtTime(t.remind_at) + '</div>' : '')
+        + '</div>'
+        + '<button onclick="completeAheadTask(\'' + t.id + '\')" style="background:none;border:2px solid var(--border2);border-radius:50%;width:26px;height:26px;cursor:pointer;color:var(--muted);font-size:12px;">✓</button>'
+        + '</div>';
+    });
+  }
+
+  if (!jobsOnDay.length && !tasksOnDay.length) {
+    html += '<div style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center;">Nothing planned.<br>Tap + to add something.</div>';
+  }
+
+  html += '</div>';
+  html += '<button onclick="document.getElementById(\'quickAddDrawer\').style.display=\'block\';document.getElementById(\'qaDate\').value=\'' + ds + '\';document.getElementById(\'quickAddLabel\').textContent=\'Add to ' + fmtDateLabel(ds) + '\';" style="width:100%;padding:14px;background:var(--s2);border:2px dashed var(--border2);border-radius:16px;color:var(--muted);font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;">+ Add to this day</button>';
+
+  daysEl.innerHTML = html;
+}
+
+async function completeAheadTask(id) {
+  await sb.from('tasks').update({ done: true }).eq('id', id);
+  buildAhead();
+}
+
+function localDateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function fmtDateLabel(ds) {
+  var today = localDateStr(new Date());
+  if (ds === today) return 'Today';
+  var d2 = new Date(ds + 'T12:00:00');
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d2.getDay()] + ' ' + MONTH_NAMES[d2.getMonth()] + ' ' + d2.getDate();
+}
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
