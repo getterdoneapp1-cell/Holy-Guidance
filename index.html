@@ -298,13 +298,11 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 
 <!-- JOBS -->
 <div class="screen" id="screen-jobs">
-  <div style="background:rgba(252,211,77,.06);border:1px solid rgba(252,211,77,.2);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:rgba(252,211,77,.9);line-height:1.5;">
-    Connect your landscaping app to pull jobs automatically. Showing sample data for now.
+  <div class="sec-label" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>Today's Jobs</span>
+    <button onclick="loadJobs()" style="font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:700;">↻ Refresh</button>
   </div>
-  <div class="sec-label">Today's Jobs</div>
-  <div class="job-card"><div class="job-name">Smith Residence — Lawn Mowing</div><div class="job-detail"><span>📍 142 Oak St</span><span>9:00 AM</span></div><span class="job-tag tag-today">TODAY</span></div>
-  <div class="job-card"><div class="job-name">Ridgeline Park Cleanup</div><div class="job-detail"><span>📍 Ridgeline Park</span><span>1:30 PM</span></div><span class="job-tag tag-today">TODAY</span></div>
-  <div class="job-card pending"><div class="job-name">Thompson — Mulch Install</div><div class="job-detail"><span>📍 88 Birchwood Dr</span><span>TBD</span></div><span class="job-tag tag-pending">PENDING</span></div>
+  <div id="jobsList"><div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">Loading jobs...</div></div>
 </div>
 
 <!-- TASKS -->
@@ -582,9 +580,42 @@ async function handleAuth() {
 }
 
 // ── Load all data from Supabase ──
+async function loadJobs() {
+  var el = document.getElementById('jobsList');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">Loading jobs...</div>';
+  try {
+    var res = await fetch('/api/jobs');
+    var jobs = await res.json();
+    if (!Array.isArray(jobs) || !jobs.length) {
+      el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">No jobs scheduled for today.</div>';
+      document.getElementById('statJobs').textContent = '0';
+      return;
+    }
+    document.getElementById('statJobs').textContent = jobs.length;
+    el.innerHTML = jobs.map(function(j) {
+      var time = j.scheduled_date ? fmtTime(j.scheduled_date.slice(11,16)) : 'TBD';
+      var status = j.status === 'in_progress' ? 'IN PROGRESS' : j.status === 'scheduled' ? 'TODAY' : j.status.toUpperCase();
+      var tagClass = j.status === 'scheduled' || j.status === 'in_progress' ? 'tag-today' : 'tag-pending';
+      return '<div class="job-card">'
+        + '<div class="job-name">' + (j.customer_name ? j.customer_name + ' — ' : '') + j.title + '</div>'
+        + '<div class="job-detail">'
+        + (j.address ? '<span>📍 ' + j.address + '</span>' : '')
+        + '<span>🕐 ' + time + '</span>'
+        + (j.price ? '<span>💵 $' + Number(j.price).toFixed(0) + '</span>' : '')
+        + '</div>'
+        + '<span class="job-tag ' + tagClass + '">' + status + '</span>'
+        + '</div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red);font-size:14px;padding:16px;">Could not load jobs. Check your connection.</div>';
+  }
+}
+
 async function loadAllData() {
   if (!sb || !currentUser) return;
   var today = dateKey(new Date());
+  loadJobs();
 
   // Tasks
   var tr = await sb.from('tasks').select('*').order('created_at');
