@@ -754,12 +754,14 @@ async function buildAhead() {
   strip.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px;">Loading…</div>';
   daysEl.innerHTML = '';
 
-  // Fetch upcoming jobs
-  var jobs = [];
+  // Fetch upcoming jobs + calendar events + recurring
+  var jobs = [], calendarEvents = [], recurringOccurrences = [];
   try {
     var r = await fetch('/api/upcoming');
     var d = await r.json();
-    if (Array.isArray(d)) jobs = d;
+    jobs = d.jobs || [];
+    calendarEvents = d.calendarEvents || [];
+    recurringOccurrences = d.recurringOccurrences || [];
   } catch(e) {}
 
   // Fetch tasks with task_date for next 14 days
@@ -791,8 +793,10 @@ async function buildAhead() {
     var dayNum = d2.getDate();
     // count items for dot
     var jobsOnDay = jobs.filter(function(j){ return (j.scheduled_date||'').slice(0,10) === ds; });
+    var calOnDay = calendarEvents.filter(function(e){ return (e.date||'').slice(0,10) === ds; });
+    var recOnDay = recurringOccurrences.filter(function(r){ return (r.date||'').slice(0,10) === ds; });
     var tasksOnDay = taskRows.filter(function(t){ return t.task_date === ds; });
-    var hasDot = jobsOnDay.length + tasksOnDay.length > 0;
+    var hasDot = jobsOnDay.length + calOnDay.length + recOnDay.length + tasksOnDay.length > 0;
     return '<button onclick="selectAheadDay(\'' + ds + '\')" style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 14px;border-radius:14px;border:none;cursor:pointer;font-family:inherit;transition:all .15s;background:' + (active ? 'var(--g2)' : 'var(--s2)') + ';color:' + (active ? '#000' : 'var(--text)') + ';">'
       + '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">' + dayName + '</span>'
       + '<span style="font-size:20px;font-weight:900;">' + dayNum + '</span>'
@@ -800,7 +804,7 @@ async function buildAhead() {
       + '</button>';
   }).join('');
 
-  renderAheadDay(jobs, taskRows, days);
+  renderAheadDay(jobs, calendarEvents, recurringOccurrences, taskRows, days);
 
   // Quick-add drawer wiring
   var drawer = document.getElementById('quickAddDrawer');
@@ -812,7 +816,7 @@ async function buildAhead() {
     var obj = { user_id: currentUser.id, text: text, done: false, task_date: date };
     if (time) obj.remind_at = time;
     var ins = await sb.from('tasks').insert(obj).select().single();
-    if (ins.data) { taskRows.push(ins.data); renderAheadDay(jobs, taskRows, days); }
+    if (ins.data) { taskRows.push(ins.data); renderAheadDay(jobs, calendarEvents, recurringOccurrences, taskRows, days); }
     document.getElementById('qaText').value = '';
     document.getElementById('qaTime').value = '';
     drawer.style.display = 'none';
@@ -827,7 +831,7 @@ function selectAheadDay(ds) {
   buildAhead();
 }
 
-function renderAheadDay(jobs, taskRows, days) {
+function renderAheadDay(jobs, calendarEvents, recurringOccurrences, taskRows, days) {
   var daysEl = document.getElementById('aheadDays');
   var ds = aheadSelectedDate;
   var d2 = days.find(function(d){ return localDateStr(d) === ds; }) || days[0];
@@ -835,13 +839,19 @@ function renderAheadDay(jobs, taskRows, days) {
   var dayLabel = ds === localDateStr(new Date()) ? 'Today — ' + dayName : dayName + ', ' + MONTH_NAMES[d2.getMonth()] + ' ' + d2.getDate();
 
   var jobsOnDay = jobs.filter(function(j){ return (j.scheduled_date||'').slice(0,10) === ds; });
+  var calOnDay = calendarEvents.filter(function(e){ return (e.date||'').slice(0,10) === ds; });
+  var recurOnDay = recurringOccurrences.filter(function(r){ return (r.date||'').slice(0,10) === ds; });
   var tasksOnDay = taskRows.filter(function(t){ return (t.task_date||'') === ds && !t.done; });
+
+  var hasJobs = jobsOnDay.length || calOnDay.length || recurOnDay.length;
 
   var html = '<div style="margin-bottom:12px;">'
     + '<div style="font-size:17px;font-weight:900;margin-bottom:14px;">' + dayLabel + '</div>';
 
-  if (jobsOnDay.length) {
-    html += '<div style="font-size:11px;font-weight:800;color:#f97316;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">🟠 Jobs</div>';
+  if (hasJobs) {
+    html += '<div style="font-size:11px;font-weight:800;color:#f97316;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">🟠 Jobs & Events</div>';
+
+    // Old-style scheduled jobs
     jobsOnDay.forEach(function(j) {
       var t = (j.scheduled_date||'').slice(11,16);
       html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--s2);border-radius:14px;margin-bottom:8px;border-left:3px solid #f97316;">'
@@ -849,6 +859,29 @@ function renderAheadDay(jobs, taskRows, days) {
         + '<div style="font-size:15px;font-weight:700;">' + (j.customer_name || j.title || 'Job') + '</div>'
         + (t ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏰ ' + fmtTime(t) + '</div>' : '')
         + (j.address ? '<div style="font-size:12px;color:var(--muted);">📍 ' + j.address + '</div>' : '')
+        + '</div></div>';
+    });
+
+    // Calendar events
+    calOnDay.forEach(function(e) {
+      var t = (e.date||'').slice(11,16);
+      var typeLabel = e.type === 'ESTIMATE_VISIT' ? 'Estimate Visit' : 'Job';
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--s2);border-radius:14px;margin-bottom:8px;border-left:3px solid #f97316;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:15px;font-weight:700;">' + (e.clientName || e.title || typeLabel) + '</div>'
+        + '<div style="font-size:11px;color:#f97316;font-weight:700;text-transform:uppercase;margin-top:2px;">' + typeLabel + '</div>'
+        + (t && t !== '00:00' ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏰ ' + fmtTime(t) + (e.duration ? ' · ' + e.duration + ' min' : '') + '</div>' : '')
+        + (e.address ? '<div style="font-size:12px;color:var(--muted);">📍 ' + e.address + '</div>' : '')
+        + '</div></div>';
+    });
+
+    // Recurring clients
+    recurOnDay.forEach(function(r) {
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--s2);border-radius:14px;margin-bottom:8px;border-left:3px solid #fb923c;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:15px;font-weight:700;">' + r.clientName + '</div>'
+        + '<div style="font-size:11px;color:#fb923c;font-weight:700;text-transform:uppercase;margin-top:2px;">🔁 Recurring · ' + r.frequency + '</div>'
+        + (r.address ? '<div style="font-size:12px;color:var(--muted);">📍 ' + r.address + '</div>' : '')
         + '</div></div>';
     });
   }
@@ -866,7 +899,7 @@ function renderAheadDay(jobs, taskRows, days) {
     });
   }
 
-  if (!jobsOnDay.length && !tasksOnDay.length) {
+  if (!hasJobs && !tasksOnDay.length) {
     html += '<div style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center;">Nothing planned.<br>Tap + to add something.</div>';
   }
 
