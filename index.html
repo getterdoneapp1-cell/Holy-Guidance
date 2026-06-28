@@ -536,6 +536,7 @@ function showApp() {
   applyTheme(localStorage.getItem('hg_theme') || 'dark');
   loadAllData();
   initHomeScreen();
+  setupPushNotifications();
 }
 
 function showAuth() {
@@ -1050,6 +1051,37 @@ async function loadJournalHistory() {
 function toggleHistoryEntry(el) {
   var detail = el.querySelector('.history-detail');
   detail.classList.toggle('open');
+}
+
+// ── Push Notifications ──
+var VAPID_PUBLIC_KEY = 'BB2lCFwUONeCw1txHgd_vwhYzKn1H6Fzl04THcMNblVl9jN1tTVOWW91uTVYwlJieRG6gDSiLbpWdF1_hQAozaM';
+
+function urlBase64ToUint8Array(base64String) {
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  var rawData = atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+  for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function setupPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    var reg = await navigator.serviceWorker.register('/sw.js');
+    var permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    var existing = await reg.pushManager.getSubscription();
+    var sub = existing || await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON(), userId: currentUser.id })
+    });
+  } catch(e) { console.log('Push setup:', e.message); }
 }
 
 // ── Entry point ──
